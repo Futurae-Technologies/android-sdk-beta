@@ -10,7 +10,6 @@ import kotlin.random.Random
 
 class CustomBackupAgent : BackupAgent() {
 
-    private val TAG = CustomBackupAgent::class.simpleName
     private val PREFS_BACKUP_KEY = "prefs_shared_prefs_backup_key"
 
     override fun onBackup(oldState: ParcelFileDescriptor?, data: BackupDataOutput, newState: ParcelFileDescriptor?) {
@@ -35,7 +34,7 @@ class CustomBackupAgent : BackupAgent() {
             data.writeEntityHeader(PREFS_BACKUP_KEY, len)
             data.writeEntityData(buffer, len)
         } catch (e: IOException) {
-            Timber.e("")
+            Timber.e(e)
             throw e
         }
     }
@@ -54,7 +53,9 @@ class CustomBackupAgent : BackupAgent() {
                     if (storedValue.isBlank()) {
                         return
                     }
-                    Timber.d("onRestore: Prefs restore from the backup completed. Value: $storedValue, calling SDK backup agent")
+                    Timber.d(
+                        "onRestore: Prefs restore from the backup completed. Value: ${storedValue}, calling SDK backup agent"
+                    )
                     val sp = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
                     sp.edit().putInt(PREF_RANDOM_STRING, storedValue.toInt()).apply()
                 } catch (e: IOException) {
@@ -64,6 +65,7 @@ class CustomBackupAgent : BackupAgent() {
                     Timber.e(e)
                 }
             } else {
+                Timber.e("Restoring of Futurae account data")
                 com.futurae.sdk.BackupAgent.onRestoreAccountsData(this, data)
             }
         }

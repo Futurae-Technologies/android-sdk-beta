@@ -15,10 +15,10 @@ import com.futurae.futuraedemo.databinding.ActivityFragmentContainerBinding
 import com.futurae.futuraedemo.ui.fragment.FragmentConfiguration
 import com.futurae.futuraedemo.ui.fragment.FragmentMain
 import com.futurae.futuraedemo.ui.fragment.FragmentSettings
-import com.futurae.futuraedemo.util.LocalStorage
 import com.futurae.futuraedemo.util.showAlert
 import com.futurae.futuraedemo.util.showDialog
 import com.futurae.futuraedemo.util.showErrorAlert
+import com.futurae.futuraedemo.util.LocalStorage
 import com.futurae.sdk.Callback
 import com.futurae.sdk.SDKConfiguration
 import com.futurae.sdk.exception.LockCorruptedStateException

@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import com.futurae.futuraedemo.FuturaeSdkWrapper
@@ -21,10 +20,17 @@ import com.futurae.futuraedemo.util.showDialog
 import com.futurae.futuraedemo.util.showErrorAlert
 import com.futurae.sdk.Callback
 import com.futurae.sdk.FuturaeCallback
+import com.futurae.sdk.FuturaeResultCallback
+import com.futurae.sdk.FuturaeSDK
 import com.futurae.sdk.LockConfigurationType
 import com.futurae.sdk.SDKConfiguration
+import com.futurae.sdk.model.AccountsStatus
 import com.futurae.sdk.debug.FuturaeDebugUtil
 import com.futurae.sdk.model.IntegrityResult
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import timber.log.Timber
 
 
 class FragmentSettings : Fragment() {
@@ -94,11 +100,11 @@ class FragmentSettings : Fragment() {
                 accounts.forEach { account ->
                     FuturaeSdkWrapper.sdk.getClient().logout(account.userId, object : FuturaeCallback {
                         override fun success() {
-                            Toast.makeText(requireContext(), "Logout successful", Toast.LENGTH_SHORT).show()
+                            Timber.i("Successfully logged out: ${account.userId}")
                         }
 
                         override fun failure(throwable: Throwable) {
-                            showErrorAlert("Logout Error", throwable)
+                            Timber.e("Error logging out: ${account.userId}", throwable)
                         }
                     })
                 }

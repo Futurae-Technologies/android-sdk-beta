@@ -7,6 +7,6 @@ pluginManagement {
     }
 }
 
-rootProject.name = 'futurae-android-sdk-sample'
+rootProject.name = 'futurae-android-sdk-beta-sample'
 
 include ':app'
