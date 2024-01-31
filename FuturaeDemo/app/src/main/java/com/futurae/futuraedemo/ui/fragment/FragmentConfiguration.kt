@@ -9,9 +9,9 @@ import androidx.fragment.app.Fragment
 import com.futurae.futuraedemo.R
 import com.futurae.futuraedemo.databinding.FragmentSdkConfigurationBinding
 import com.futurae.futuraedemo.util.showErrorAlert
-import com.futurae.sdk.LockConfigurationType
-import com.futurae.sdk.SDKConfiguration
 import com.futurae.sdk.debug.FuturaeDebugUtil
+import com.futurae.sdk.public_api.common.LockConfigurationType
+import com.futurae.sdk.public_api.common.SDKConfiguration
 
 class FragmentConfiguration : Fragment() {
 
@@ -55,14 +55,15 @@ class FragmentConfiguration : Fragment() {
                     R.id.chip300 -> 300
                     else -> throw IllegalStateException("Unrecognized duration selection")
                 }
-                val sdkConfig = SDKConfiguration.Builder()
+                listener?.onConfigurationSelected(
+                    SDKConfiguration.Builder()
                         .setUnlockDuration(duration)
                         .setLockConfigurationType(sdkLockConfiguration)
                         .setInvalidatedByBiometricChange(binding.checkboxBioInvalidation.isChecked)
                         .setUnlockedDeviceRequired(binding.checkboxDeviceUnlocked.isChecked)
                         .setSkipHardwareSecurity(binding.checkboxSkipHardwareStorage.isChecked)
                         .build()
-                listener?.onConfigurationSelected(sdkConfig)
+                )
             } catch (e: Exception) {
                 showErrorAlert("SDK Error", e)
             }

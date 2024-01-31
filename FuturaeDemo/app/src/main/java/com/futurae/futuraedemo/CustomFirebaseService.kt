@@ -1,49 +1,54 @@
 package com.futurae.futuraedemo
 
-import android.os.Bundle
-import com.futurae.futuraedemo.FuturaeSdkWrapper
-import com.futurae.sdk.FuturaeCallback
 import com.futurae.sdk.FuturaeSDK
+import com.futurae.sdk.public_api.common.FuturaeSDKStatus
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
-import timber.log.Timber
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
+import java.util.concurrent.CancellationException
 
 
 class CustomFirebaseService : FirebaseMessagingService() {
 
+    private val job = SupervisorJob()
+    private val coroutineScope = CoroutineScope(Dispatchers.Default + job)
+
     override fun onMessageReceived(message: RemoteMessage) {
         super.onMessageReceived(message)
 
-        if(FuturaeSDK.isSDKInitialized) {
-            val messageData = message.data
-
-            // convert map -> bundle
-            val data = Bundle()
-            messageData.entries.forEach { (k, v) ->
-                data.putString(k, v)
+        coroutineScope.launch {
+            val sdkStatus = FuturaeSDK.sdkState().value.status
+            if (sdkStatus is FuturaeSDKStatus.Uninitialized || sdkStatus is FuturaeSDKStatus.Corrupted) {
+                // Make sure to initialize SDK if need be
             }
-
-            val ftrNotificationFactory = FuturaeSDK.getFTRNotificationFactory()
-            val notification = ftrNotificationFactory.createNotification(data)
-            notification?.handle()
+            val messageData = message.data
+            FuturaeSDK.client.operationsApi.handlePushNotification(messageData)
         }
     }
 
     override fun onNewToken(token: String) {
         super.onNewToken(token)
 
-        if(FuturaeSDK.isSDKInitialized) {
-            FuturaeSdkWrapper.client.registerPushToken(token, object : FuturaeCallback {
-                override fun success() {
-                    Timber.d("Token upload success")
-                }
-
-                override fun failure(t: Throwable) {
-                    Timber.e("Token upload failure", t)
-                }
-            })
-        } else {
-            Timber.e("Token updated. Please register with push token")
+        coroutineScope.launch {
+            val sdkStatus = FuturaeSDK.sdkState().value.status
+            if (sdkStatus is FuturaeSDKStatus.Uninitialized || sdkStatus is FuturaeSDKStatus.Corrupted) {
+                // Persist token or flag for upload, once SDK is initialized
+                return@launch
+            }
+            try {
+                FuturaeSDK.client.accountApi.registerFirebasePushToken(token)
+            } catch (e: Throwable) {
+                // upload failed. Handle errors and retry
+            }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        coroutineScope.cancel(CancellationException("Service destroyed"))
     }
 }

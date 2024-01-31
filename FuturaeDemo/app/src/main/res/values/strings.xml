@@ -9,4 +9,6 @@
     <string name="channel_name">channel_futurae</string>
 	<string name="channel_description">futurae notifications</string>
 
+	<string name="camera_perm_explain">In order to scan a QR code, Futurae requires access to the camera.</string>
+
 </resources>

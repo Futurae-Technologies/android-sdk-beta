@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import com.futurae.futuraedemo.databinding.FragmentSdkUnlockNoneBinding
 import com.google.android.material.button.MaterialButton
 
@@ -52,4 +53,6 @@ class FragmentSDKUnlockNone : FragmentSDKOperations() {
     override fun viewAdaptiveCollectionsButton(): MaterialButton = binding.buttonViewAdaptiveCollections
     override fun setAdaptiveThreshold(): MaterialButton = binding.buttonConfigureAdaptiveTime
     override fun serviceLogoButton(): MaterialButton = binding.buttonServiceLogo
+    override fun timeLeftView(): TextView = binding.textTimerValue
+    override fun sdkStatus(): TextView = binding.textStatusValue
 }
