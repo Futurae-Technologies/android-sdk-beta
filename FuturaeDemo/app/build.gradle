@@ -11,8 +11,8 @@ android {
         applicationId "com.futurae.futuraedemo"
         minSdkVersion 23
         targetSdkVersion 34
-        versionCode 253
-        versionName "2.5.4-beta"
+        versionCode 254
+        versionName "3.0.2-beta"
     }
 
     buildTypes {
@@ -64,7 +64,7 @@ repositories {
             password = "$GITHUB_TOKEN"
         }
     }
-        maven {
+    maven {
         url "https://maven.pkg.github.com/Futurae-Technologies/android-adaptive-sdk"
         credentials {
             username = "$GITHUB_ACTOR"
@@ -99,7 +99,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-messaging-ktx'
 
     // Futurae SDK
-    implementation 'com.futurae.sdk:futuraekit-beta:3.0.1-beta'
+    implementation 'com.futurae.sdk:futuraekit-beta:3.0.2-beta'
     // OPTIONAL - Adaptive SDK.
     implementation 'com.futurae.sdk:adaptive:1.0.2-alpha'
 

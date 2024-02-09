@@ -175,6 +175,11 @@ abstract class FuturaeActivity : AppCompatActivity() {
                 requestAdaptivePermissions()
             )
         }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            permissionLauncher.launch(
+                arrayOf(android.Manifest.permission.POST_NOTIFICATIONS)
+            )
+        }
         intent?.dataString?.takeIf { it.isNotBlank() }?.let {
             pendingUri = it
         }
