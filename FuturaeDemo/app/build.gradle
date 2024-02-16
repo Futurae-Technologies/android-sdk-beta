@@ -11,8 +11,8 @@ android {
         applicationId "com.futurae.futuraedemo"
         minSdkVersion 23
         targetSdkVersion 34
-        versionCode 253
-        versionName "2.5.4-beta"
+        versionCode 255
+        versionName "2.5.5-beta"
     }
 
     buildTypes {
@@ -99,7 +99,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-messaging-ktx'
 
     // Futurae SDK
-    implementation 'com.futurae.sdk:futuraekit-beta:2.5.4-beta'
+    implementation 'com.futurae.sdk:futuraekit-beta:2.5.5-beta'
     // OPTIONAL - Adaptive SDK.
     implementation 'com.futurae.sdk:adaptive:1.0.2-alpha'
 

@@ -20,19 +20,19 @@ import com.futurae.futuraedemo.util.showAlert
 import com.futurae.futuraedemo.util.showDialog
 import com.futurae.futuraedemo.util.showErrorAlert
 import com.futurae.futuraedemo.util.toDialogMessage
+import com.futurae.sdk.Callback
 import com.futurae.sdk.FuturaeCallback
 import com.futurae.sdk.FuturaeClient
 import com.futurae.sdk.FuturaeResultCallback
-import com.futurae.sdk.FuturaeSDK
 import com.futurae.sdk.adaptive.AdaptiveSDK
 import com.futurae.sdk.adaptive.CompletionCallback
 import com.futurae.sdk.adaptive.UpdateCallback
 import com.futurae.sdk.adaptive.model.AdaptiveCollection
 import com.futurae.sdk.approve.ApproveSession
+import com.futurae.sdk.exception.FTApiInvalidPublicKeyException
 import com.futurae.sdk.exception.LockOperationIsLockedException
 import com.futurae.sdk.exception.LockUnexpectedException
 import com.futurae.sdk.model.SessionInfo
-import com.futurae.sdk.utils.FTUri
 import com.futurae.sdk.utils.NotificationUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
@@ -367,6 +367,20 @@ abstract class FuturaeActivity : AppCompatActivity() {
                 session.sessionId,
                 sessionInfoResult.approveInfo,
                 userMultinumberChallengeInputOrNull
+            )
+        } catch (t: FTApiInvalidPublicKeyException) {
+            // the authentication failed because of client-server public key missmatch. Re-upload your public key
+            FuturaeSdkWrapper.client.uploadPublicKey(
+                object : Callback<Unit> {
+                    override fun onError(throwable: Throwable) {
+                        showErrorAlert("Public key upload failed", throwable)
+                    }
+
+                    override fun onSuccess(result: Unit) {
+                        //attempt to authenticate again after public key is synchronized
+                        onApproveAuth(session, session.hasExtraInfo(), null)
+                    }
+                }
             )
         } catch (t: Throwable) {
             Timber.e(t)
