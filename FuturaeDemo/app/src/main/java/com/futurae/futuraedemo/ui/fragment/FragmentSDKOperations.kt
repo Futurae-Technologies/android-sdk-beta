@@ -12,7 +12,6 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.widget.AppCompatEditText
 import androidx.core.content.ContextCompat.getSystemService
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
@@ -27,6 +26,7 @@ import com.futurae.futuraedemo.util.LocalStorage
 import com.futurae.futuraedemo.util.showAlert
 import com.futurae.futuraedemo.util.showDialog
 import com.futurae.futuraedemo.util.showErrorAlert
+import com.futurae.futuraedemo.util.showInputDialog
 import com.futurae.futuraedemo.util.toDialogMessage
 import com.futurae.sdk.FuturaeSDK
 import com.futurae.sdk.adaptive.AdaptiveSDK
@@ -295,18 +295,18 @@ abstract class FragmentSDKOperations : BaseFragment() {
     protected fun attemptRestoreAccounts() {
         lifecycleScope.launch {
             try {
-                val result = FuturaeSDK.client.migrationApi.getMigrateableAccounts().await()
+                val result = FuturaeSDK.client.migrationApi.getMigratableAccounts().await()
                 if (result.migratableAccountInfos.isNotEmpty()) {
+                    val requiresPinProtection = result.pinProtected || localStorage.getPersistedSDKConfig().lockConfigurationType == LockConfigurationType.SDK_PIN_WITH_BIOMETRICS_OPTIONAL
                     showDialog(
                         "SDK Account Migration",
                         "Restoring Accounts possible for:\n ${result.migratableAccountInfos.size} accounts."
-                                + "\n Requires PIN: ${result.pinProtected}"
+                                + "\n Requires PIN: $requiresPinProtection"
+                                + "\n Requires Adaptive: ${result.adaptiveEnabled}"
                                 + "\n Account names: \n ${result.migratableAccountInfos.joinToString { acc -> acc.username + ",\n" }}",
                         "Proceed",
                         {
-                            if (result.pinProtected
-                                || localStorage.getPersistedSDKConfig().lockConfigurationType == LockConfigurationType.SDK_PIN_WITH_BIOMETRICS_OPTIONAL
-                            ) {
+                            if (requiresPinProtection) {
                                 onAccountsMigrationWithSDKPINExecute()
                             } else {
                                 onAccountsMigrationExecute()
@@ -348,7 +348,7 @@ abstract class FragmentSDKOperations : BaseFragment() {
         lifecycleScope.launch {
             try {
                 val result = FuturaeSDK.client.migrationApi.migrateAccounts(
-                    MigrationUseCase.AccountsWereNotSecuredWithPinCode
+                    MigrationUseCase.AccountsNotSecuredWithPinCode
                 ).await()
                 onMigrationSuccess(result)
             } catch (t: Throwable) {
@@ -377,7 +377,7 @@ abstract class FragmentSDKOperations : BaseFragment() {
             lifecycleScope.launch {
                 try {
                     val result = FuturaeSDK.client.migrationApi.migrateAccounts(
-                        MigrationUseCase.AccountsWereNotSecuredWithPinCode
+                        MigrationUseCase.AccountsSecuredWithPinCode(it)
                     ).await()
                     onMigrationSuccess(result)
                 } catch (t: Throwable) {
@@ -390,45 +390,43 @@ abstract class FragmentSDKOperations : BaseFragment() {
     // QRCode callbacks
     private fun onEnrollQRCodeScanned(data: Intent) {
         (data.getParcelableExtra(FTRQRCodeActivity.PARAM_BARCODE) as? Barcode)?.let { qrcode ->
-            lifecycleScope.launch {
-                try {
-                    FuturaeSDK.client.accountApi.enrollAccount(
-                        EnrollmentParams(
-                            inputCode = ActivationCode(qrcode.rawValue),
-                            enrollmentUseCase = EnrollAccount
-                        )
-                    ).await()
-                    Toast.makeText(requireContext(), "Account Enrolled", Toast.LENGTH_SHORT).show()
-                } catch (t: Throwable) {
-                    Timber.e(t)
-                    showErrorAlert("Enroll API error", t)
+            requireContext().showInputDialog("Flow Binding Token") { token ->
+                lifecycleScope.launch {
+                    try {
+                        FuturaeSDK.client.accountApi.enrollAccount(
+                            EnrollmentParams(
+                                inputCode = ActivationCode(qrcode.rawValue),
+                                enrollmentUseCase = EnrollAccount,
+                                flowBindingToken = token
+                            )
+                        ).await()
+                        Toast.makeText(requireContext(), "Account Enrolled", Toast.LENGTH_SHORT)
+                            .show()
+                    } catch (t: Throwable) {
+                        showErrorAlert("Enroll API error", t)
+                    }
                 }
             }
         }
     }
 
     protected fun onManualEntryEnroll(sdkPin: CharArray? = null) {
-        val dialogView = layoutInflater.inflate(R.layout.dialog_manual_entry, null, false)
-        val dialog = AlertDialog.Builder(requireContext())
-            .setView(dialogView)
-            .setPositiveButton("ok") { dialog, which ->
-                val activationShortCode =
-                    dialogView.findViewById<AppCompatEditText>(R.id.edittext).text.toString()
-                        .replace(" ", "")
-
-                val enrollUseCase = if (sdkPin != null) {
-                    EnrollAccountAndSetupSDKPin(
-                        sdkPin = sdkPin
-                    )
-                } else {
-                    EnrollAccount
-                }
+        requireContext().showInputDialog("Activation Shortcode") { code ->
+            val enrollUseCase = if (sdkPin != null) {
+                EnrollAccountAndSetupSDKPin(
+                    sdkPin = sdkPin
+                )
+            } else {
+                EnrollAccount
+            }
+            requireContext().showInputDialog("Flow Binding Token") { token ->
                 lifecycleScope.launch {
                     try {
                         FuturaeSDK.client.accountApi.enrollAccount(
                             enrollmentParameters = EnrollmentParams(
-                                ShortActivationCode(activationShortCode),
-                                enrollUseCase
+                                ShortActivationCode(code),
+                                enrollUseCase,
+                                token
                             )
                         ).await()
                         showToast("Enrolled")
@@ -437,8 +435,7 @@ abstract class FragmentSDKOperations : BaseFragment() {
                     }
                 }
             }
-            .create()
-        dialog.show()
+        }
     }
 
     private fun onAuthQRCodeScanned(data: Intent) {

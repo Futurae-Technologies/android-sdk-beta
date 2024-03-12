@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.lifecycleScope
 import com.futurae.futuraedemo.databinding.FragmentSdkSettingsBinding
@@ -17,12 +18,19 @@ import com.futurae.futuraedemo.util.showAlert
 import com.futurae.futuraedemo.util.showErrorAlert
 import com.futurae.sdk.FuturaeSDK
 import com.futurae.sdk.debug.FuturaeDebugUtil
+import com.futurae.sdk.public_api.auth.model.ApproveParameters
+import com.futurae.sdk.public_api.auth.model.SessionId
 import com.futurae.sdk.public_api.common.LockConfigurationType
 import com.futurae.sdk.public_api.common.SDKConfiguration
 import com.futurae.sdk.public_api.common.model.PresentationConfigurationForBiometricsPrompt
 import com.futurae.sdk.public_api.common.model.PresentationConfigurationForDeviceCredentialsPrompt
+import com.futurae.sdk.public_api.exception.FTCorruptedStateException
+import com.futurae.sdk.public_api.exception.FTEncryptedStorageCorruptedException
+import com.futurae.sdk.public_api.exception.FTInvalidStateException
 import com.futurae.sdk.public_api.lock.model.SwitchTargetLockConfiguration
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 
 class FragmentSettings : BaseFragment() {
@@ -45,27 +53,6 @@ class FragmentSettings : BaseFragment() {
                     switchConfiguration(config, null)
                 }
 
-            }
-        }
-
-    private val launchPin =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            if (result.resultCode == RESULT_OK
-                && result.data?.hasExtra(EXTRA_PIN) == true
-            ) {
-                lifecycleScope.launch {
-                    try {
-                        FuturaeSDK.client.lockApi.switchToLockConfiguration(
-                            application = requireActivity().application,
-                            SwitchTargetLockConfiguration.PinWithBiometricsOptional(
-                                updatedConfiguration,
-                                result.data?.getCharArrayExtra(EXTRA_PIN) as CharArray,
-                            )
-                        )
-                    } catch (t: Throwable) {
-                        showErrorAlert("SDK Error", t)
-                    }
-                }
             }
         }
 
@@ -139,6 +126,63 @@ class FragmentSettings : BaseFragment() {
         binding.buttonClearV2LocalStorageKey.setOnClickListener {
             FuturaeDebugUtil.corruptEncryptedStorageKey(requireContext())
         }
+        binding.buttonTestWithDelay.setOnClickListener {
+            lifecycleScope.launch {
+                delay(10000)
+                try {
+                    val userIds = FuturaeSDK.client.accountApi.getActiveAccounts().map { it.userId }
+                    val result =
+                        FuturaeSDK.client.accountApi.getAccountsStatus(*userIds.toTypedArray())
+                            .await()
+
+                    result.statuses.firstOrNull { it.activeSessions.isNotEmpty() }?.let {
+                        val sessionInfo = it.activeSessions.first()
+
+                        val transactionBuilder = ApproveParameters.Builder(
+                            // This session came from a user's accountsStatus. So it WILL have a user id.
+                            SessionId(sessionInfo.userId!!, sessionInfo.sessionId)
+                        )
+                        sessionInfo.approveInfo?.let {
+                            transactionBuilder.setExtraInfo(it)
+                        }
+
+                        FuturaeSDK.client.authApi.approve(
+                            transactionBuilder.build()
+                        ).await()
+                    }
+                } catch (t: Throwable) {
+                    showErrorAlert("SDK error", t)
+                }
+            }
+        }
+        binding.buttonCheckSigning.setOnClickListener {
+            try {
+                FuturaeSDK.client.operationsApi.validateSDKSigning()
+                Toast.makeText(requireContext(), "SDK healthy", Toast.LENGTH_SHORT).show()
+            } catch (e: Throwable) {
+                when (e) {
+                    is FTEncryptedStorageCorruptedException -> showErrorAlert(
+                        "SDK Encrypted Storage error",
+                        e
+                    )
+                    is FTInvalidStateException -> showErrorAlert("SDK Uninitialized", e)
+                    is FTCorruptedStateException -> showErrorAlert("SDK Corrupted", e)
+                }
+            }
+        }
+        binding.buttonCheckPubUploaded.setOnClickListener {
+            val keyUploaded = FuturaeSDK.client.operationsApi.isPublicKeyUploaded()
+            Toast.makeText(requireContext(), "PK uploaded: ${keyUploaded}", Toast.LENGTH_SHORT).show()
+        }
+        binding.buttonUploadPK.setOnClickListener {
+            lifecycleScope.launch {
+                try {
+                    FuturaeSDK.client.operationsApi.uploadPublicKey().await()
+                } catch (t: Throwable) {
+                    Timber.e(t)
+                }
+            }
+        }
     }
 
     private fun switchConfiguration(config: SDKConfiguration, sdkPin: CharArray? = null) {
@@ -173,7 +217,8 @@ class FragmentSettings : BaseFragment() {
 
                     LockConfigurationType.SDK_PIN_WITH_BIOMETRICS_OPTIONAL -> SwitchTargetLockConfiguration.PinWithBiometricsOptional(
                         updatedConfiguration,
-                        sdkPin ?: throw IllegalStateException("Cannot switch to this configuration without an SDK PIN"),
+                        sdkPin
+                            ?: throw IllegalStateException("Cannot switch to this configuration without an SDK PIN"),
                     )
                 }
                 FuturaeSDK.client.lockApi.switchToLockConfiguration(

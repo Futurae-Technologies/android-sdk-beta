@@ -18,9 +18,13 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.futurae.futuraedemo.util.showAlert
 import com.futurae.futuraedemo.util.showDialog
 import com.futurae.futuraedemo.util.showErrorAlert
+import com.futurae.futuraedemo.util.showInputDialog
 import com.futurae.futuraedemo.util.toDialogMessage
 import com.futurae.sdk.FuturaeSDK
 import com.futurae.sdk.public_api.account.model.AccountQuery
+import com.futurae.sdk.public_api.account.model.EnrollAccount
+import com.futurae.sdk.public_api.account.model.EnrollmentParams
+import com.futurae.sdk.public_api.account.model.URI
 import com.futurae.sdk.public_api.auth.model.ApproveParameters
 import com.futurae.sdk.public_api.auth.model.RejectParameters
 import com.futurae.sdk.public_api.auth.model.SessionId
@@ -34,6 +38,7 @@ import com.futurae.sdk.public_api.session.model.ApproveSession
 import com.futurae.sdk.public_api.session.model.ById
 import com.futurae.sdk.public_api.session.model.SessionInfoQuery
 import com.futurae.sdk.utils.FTNotificationUtils
+import com.futurae.sdk.utils.FTUriUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -109,7 +114,7 @@ abstract class FuturaeActivity : AppCompatActivity() {
                                     userId = userId,
                                     encryptedExtrasString = encryptedExtras
                                 )
-                            }  catch (e: FTAccountNotFoundException) {
+                            } catch (e: FTAccountNotFoundException) {
                                 Timber.e("Account not found: ${e.message}")
                                 null
                             } catch (e: FTEncryptedStorageCorruptedException) {
@@ -187,13 +192,30 @@ abstract class FuturaeActivity : AppCompatActivity() {
 
     fun handleUri(uriCall: String) {
         onReceivedUri {
-            lifecycleScope.launch {
-                try {
-                    FuturaeSDK.client.operationsApi.handleUri(uriCall).await()
-                    showToast("URI handled")
-                } catch (t: FTException) {
-                    showErrorAlert("URI Error", t)
+            try {
+                if (FTUriUtils.isEnrollUri(uriCall)) {
+                    // Optional: you may use the enrollAccount API instead of handleUri API,
+                    // to support flow-binding-token
+                    showInputDialog("Flow Binding Token") {
+                        lifecycleScope.launch {
+                            FuturaeSDK.client.accountApi.enrollAccount(
+                                EnrollmentParams(
+                                    URI(uriCall),
+                                    EnrollAccount,
+                                    it
+                                )
+                            ).await()
+                            showToast("URI Enrollment complete")
+                        }
+                    }
+                } else {
+                    lifecycleScope.launch {
+                        FuturaeSDK.client.operationsApi.handleUri(uriCall).await()
+                        showToast("URI handled")
+                    }
                 }
+            } catch (t: FTException) {
+                showErrorAlert("URI Error", t)
             }
         }
         pendingUri = null
@@ -222,7 +244,8 @@ abstract class FuturaeActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        LocalBroadcastManager.getInstance(this).registerReceiver(broadcastReceiver, intentFilter)
+        LocalBroadcastManager.getInstance(this)
+            .registerReceiver(broadcastReceiver, intentFilter)
     }
 
     override fun onPause() {

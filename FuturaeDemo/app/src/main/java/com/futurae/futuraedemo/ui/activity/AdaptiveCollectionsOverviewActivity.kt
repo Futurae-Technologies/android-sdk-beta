@@ -14,10 +14,10 @@ import com.futurae.sdk.FuturaeSDK
 import com.futurae.sdk.adaptive.AdaptiveDbHelper
 import com.futurae.sdk.adaptive.model.AdaptiveCollection
 import com.google.gson.GsonBuilder
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Locale
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class AdaptiveViewerActivity : FuturaeActivity() {
 

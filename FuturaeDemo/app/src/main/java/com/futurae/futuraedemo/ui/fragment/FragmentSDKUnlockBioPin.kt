@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.lifecycleScope
@@ -14,9 +15,9 @@ import com.futurae.futuraedemo.ui.activity.FTRQRCodeActivity
 import com.futurae.futuraedemo.util.showAlert
 import com.futurae.futuraedemo.util.showDialog
 import com.futurae.futuraedemo.util.showErrorAlert
+import com.futurae.futuraedemo.util.showInputDialog
 import com.futurae.sdk.FuturaeSDK
 import com.futurae.sdk.public_api.account.model.ActivationCode
-import com.futurae.sdk.public_api.session.model.ApproveInfo
 import com.futurae.sdk.public_api.account.model.EnrollAccountAndSetupSDKPin
 import com.futurae.sdk.public_api.account.model.EnrollmentParams
 import com.futurae.sdk.public_api.auth.model.Biometrics
@@ -27,6 +28,7 @@ import com.futurae.sdk.public_api.exception.FTMalformedQRCodeException
 import com.futurae.sdk.public_api.exception.FTUnlockRequiredException
 import com.futurae.sdk.public_api.lock.model.WithBiometrics
 import com.futurae.sdk.public_api.lock.model.WithSDKPin
+import com.futurae.sdk.public_api.session.model.ApproveInfo
 import com.futurae.sdk.utils.FTQRCodeUtils
 import com.google.android.gms.vision.barcode.Barcode
 import com.google.android.material.button.MaterialButton
@@ -57,20 +59,23 @@ class FragmentSDKUnlockBioPin : FragmentSDKOperations() {
                         REQUEST_ENROLL_WITH_PIN -> {
                             if (FTQRCodeUtils.getQrcodeType(qrcode.rawValue) == FTQRCodeUtils.QRType.Enroll) {
                                 getPinWithCallback {
-                                    lifecycleScope.launch {
-                                        try {
-                                            FuturaeSDK.client.accountApi.enrollAccount(
-                                                EnrollmentParams(
-                                                    inputCode = ActivationCode(qrcode.rawValue),
-                                                    enrollmentUseCase = EnrollAccountAndSetupSDKPin(
-                                                        it
+                                    requireContext().showInputDialog("Flow Binding Token") { token ->
+                                        lifecycleScope.launch {
+                                            try {
+                                                FuturaeSDK.client.accountApi.enrollAccount(
+                                                    EnrollmentParams(
+                                                        inputCode = ActivationCode(qrcode.rawValue),
+                                                        enrollmentUseCase = EnrollAccountAndSetupSDKPin(
+                                                            it
+                                                        ),
+                                                        token
                                                     )
-                                                )
-                                            ).await()
-                                        } catch (t: Throwable) {
-                                            showErrorAlert("Enroll API Erro", t)
-                                        } finally {
-                                            currentRequest = 0
+                                                ).await()
+                                            } catch (t: Throwable) {
+                                                showErrorAlert("Enroll API Erro", t)
+                                            } finally {
+                                                currentRequest = 0
+                                            }
                                         }
                                     }
                                 }
@@ -93,7 +98,9 @@ class FragmentSDKUnlockBioPin : FragmentSDKOperations() {
                                     getPinWithCallback {
                                         try {
                                             val extras: List<ApproveInfo>? = try {
-                                                FuturaeSDK.client.sessionApi.extractQRCodeExtraInfo(qrcode.rawValue)
+                                                FuturaeSDK.client.sessionApi.extractQRCodeExtraInfo(
+                                                    qrcode.rawValue
+                                                )
                                             } catch (e: FTMalformedQRCodeException) {
                                                 Timber.e(e)
                                                 showErrorAlert("SDK Unlock", e)
@@ -251,7 +258,7 @@ class FragmentSDKUnlockBioPin : FragmentSDKOperations() {
             getPinWithCallback {
                 lifecycleScope.launch {
                     try {
-                        FuturaeSDK.client.lockApi.changeSDKPin(it)
+                        FuturaeSDK.client.lockApi.changeSDKPin(it).await()
                     } catch (t: Throwable) {
                         showErrorAlert("Lock API Error", t)
                     } finally {
@@ -350,7 +357,7 @@ class FragmentSDKUnlockBioPin : FragmentSDKOperations() {
         binding.buttonDeactivateBiometrics.setOnClickListener {
             lifecycleScope.launch {
                 try {
-                    FuturaeSDK.client.lockApi.deactivateBiometrics()
+                    FuturaeSDK.client.lockApi.deactivateBiometrics().await()
                     binding.unlockMethodsValue.text =
                         FuturaeSDK.client.lockApi.getActiveUnlockMethods().joinToString()
                 } catch (t: Throwable) {
@@ -380,7 +387,7 @@ class FragmentSDKUnlockBioPin : FragmentSDKOperations() {
                 val account = accounts[0]
                 lifecycleScope.launch {
                     try {
-                        FuturaeSDK.client.authApi.getTOTP(
+                        val totp = FuturaeSDK.client.authApi.getTOTP(
                             account.userId,
                             SDKAuthMode.PinOrBiometrics(
                                 Biometrics(
@@ -394,6 +401,10 @@ class FragmentSDKUnlockBioPin : FragmentSDKOperations() {
                                 )
                             )
                         ).await()
+                        showAlert(
+                            "TOTP",
+                            "Code: ${totp.passcode}\nRemaining seconds: ${totp.remainingSeconds}"
+                        )
                     } catch (t: Throwable) {
                         showErrorAlert("Auth API error", t)
                     }
@@ -414,6 +425,18 @@ class FragmentSDKUnlockBioPin : FragmentSDKOperations() {
         }
         binding.buttonAccHistory.setOnClickListener {
             getAccountHistory()
+        }
+        binding.buttonCheckBioInvalidation.setOnClickListener {
+            try {
+                val haveBiometricsInvalidated = FuturaeSDK.client.lockApi.haveBiometricsChanged()
+                Toast.makeText(
+                    requireContext(),
+                    "Invalidated: ${haveBiometricsInvalidated}",
+                    Toast.LENGTH_SHORT
+                ).show()
+            } catch (t: Throwable) {
+                showErrorAlert("Lock API Error", t)
+            }
         }
     }
 

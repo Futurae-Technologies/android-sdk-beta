@@ -31,11 +31,16 @@ class ActivityAccountHistory : FuturaeActivity() {
         binding.emptyText.isVisible = false
         binding.recyclerView.isVisible = false
         binding.recyclerView.adapter = adapter
-        binding.recyclerView.addItemDecoration(DividerItemDecoration(this, DividerItemDecoration.VERTICAL))
-
+        binding.recyclerView.addItemDecoration(
+            DividerItemDecoration(
+                this,
+                DividerItemDecoration.VERTICAL
+            )
+        )
         FuturaeSDK.client.accountApi.getActiveAccounts().firstOrNull()?.let {
             lifecycleScope.launch {
-                val accountHistoryItems = FuturaeSDK.client.accountApi.getAccountHistory(it.userId).await()
+                val accountHistoryItems =
+                    FuturaeSDK.client.accountApi.getAccountHistory(it.userId).await()
                 if (accountHistoryItems.isNotEmpty()) {
                     binding.progress.isVisible = false
                     binding.emptyText.isVisible = false
@@ -62,7 +67,8 @@ class ActivityAccountHistory : FuturaeActivity() {
 
 class AccountHistoryAdapter : ListAdapter<AccountHistoryItem, AccountHistoryViewHolder>(callback) {
 
-    private val simpleDateFormat = SimpleDateFormat("yyyy.MM.dd G 'at' HH:mm:ss z", Locale.getDefault())
+    private val simpleDateFormat =
+        SimpleDateFormat("yyyy.MM.dd G 'at' HH:mm:ss z", Locale.getDefault())
 
     companion object {
         val callback = object : DiffUtil.ItemCallback<AccountHistoryItem>() {
@@ -100,7 +106,7 @@ class AccountHistoryViewHolder(private val itemAccountHistoryBinding: ItemAccoun
 
     fun bind(history: AccountHistoryItem, date: String) {
         itemAccountHistoryBinding.typeValueText.text = history.details.type
-        itemAccountHistoryBinding.statusValueText.text = history.details.result
+        itemAccountHistoryBinding.statusValueText.text = history.details.result.toString()
         itemAccountHistoryBinding.dateValueText.text = date
         itemAccountHistoryBinding.resultValueText.text = history.details.result
     }

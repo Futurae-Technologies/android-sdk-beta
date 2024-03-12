@@ -88,6 +88,27 @@
                 android:layout_marginTop="10dp"
                 android:text="Test with delay" />
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonCheckSigning"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="Check SDK signing" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonCheckPubUploaded"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="Check PK Uploaded" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonUploadPK"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="Upload Pub K" />
+
         </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>

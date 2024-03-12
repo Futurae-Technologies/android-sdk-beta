@@ -55,15 +55,14 @@ class FragmentConfiguration : Fragment() {
                     R.id.chip300 -> 300
                     else -> throw IllegalStateException("Unrecognized duration selection")
                 }
-                listener?.onConfigurationSelected(
-                    SDKConfiguration.Builder()
+                val sdkConfig = SDKConfiguration.Builder()
                         .setUnlockDuration(duration)
                         .setLockConfigurationType(sdkLockConfiguration)
                         .setInvalidatedByBiometricChange(binding.checkboxBioInvalidation.isChecked)
                         .setUnlockedDeviceRequired(binding.checkboxDeviceUnlocked.isChecked)
                         .setSkipHardwareSecurity(binding.checkboxSkipHardwareStorage.isChecked)
                         .build()
-                )
+                listener?.onConfigurationSelected(sdkConfig)
             } catch (e: Exception) {
                 showErrorAlert("SDK Error", e)
             }

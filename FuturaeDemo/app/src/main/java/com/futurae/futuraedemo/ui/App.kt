@@ -26,7 +26,7 @@ class App : Application() {
         super.onCreate()
         Timber.plant(Timber.DebugTree())
         applicationScope.launch {
-            FuturaeSDK.sdkState().collect {
+            FuturaeSDK.sdkState().collect{
                 Timber.i("SDK state: $it")
             }
         }
