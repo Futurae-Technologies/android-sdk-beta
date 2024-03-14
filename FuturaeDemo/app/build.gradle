@@ -11,8 +11,8 @@ android {
         applicationId "com.futurae.futuraedemo"
         minSdkVersion 23
         targetSdkVersion 34
-        versionCode 257
-        versionName "2.5.7-beta-xiaomi-biometric-support"
+        versionCode 258
+        versionName "2.5.8"
     }
 
     buildTypes {
@@ -99,7 +99,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-messaging-ktx'
 
     // Futurae SDK
-    implementation 'com.futurae.sdk:futuraekit-beta:2.5.7-beta-xiaomi-biometric-support'
+    implementation 'com.futurae.sdk:futuraekit-beta:2.5.8-beta'
     // OPTIONAL - Adaptive SDK.
     implementation 'com.futurae.sdk:adaptive:1.0.2-alpha'
 
