@@ -11,8 +11,10 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.futurae.futuraedemo.databinding.ActivityHistoryBinding
 import com.futurae.futuraedemo.databinding.ItemAccountHistoryBinding
+import com.futurae.futuraedemo.util.showErrorAlert
 import com.futurae.sdk.FuturaeSDK
 import com.futurae.sdk.public_api.account.model.AccountHistoryItem
+import com.futurae.sdk.public_api.exception.FTException
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -39,18 +41,23 @@ class ActivityAccountHistory : FuturaeActivity() {
         )
         FuturaeSDK.client.accountApi.getActiveAccounts().firstOrNull()?.let {
             lifecycleScope.launch {
-                val accountHistoryItems =
-                    FuturaeSDK.client.accountApi.getAccountHistory(it.userId).await()
-                if (accountHistoryItems.isNotEmpty()) {
-                    binding.progress.isVisible = false
-                    binding.emptyText.isVisible = false
-                    binding.recyclerView.isVisible = true
-                } else {
-                    binding.progress.isVisible = false
-                    binding.emptyText.isVisible = true
-                    binding.recyclerView.isVisible = false
+                try {
+                    val accountHistoryItems =
+                        FuturaeSDK.client.accountApi.getAccountHistory(it.userId).await()
+                    if (accountHistoryItems.isNotEmpty()) {
+                        binding.progress.isVisible = false
+                        binding.emptyText.isVisible = false
+                        binding.recyclerView.isVisible = true
+                    } else {
+                        binding.progress.isVisible = false
+                        binding.emptyText.isVisible = true
+                        binding.recyclerView.isVisible = false
+                    }
+                    adapter.submitList(accountHistoryItems)
+                } catch (e: FTException) {
+                    showErrorAlert("SDK Error", e)
                 }
-                adapter.submitList(accountHistoryItems)
+
             }
         }
 

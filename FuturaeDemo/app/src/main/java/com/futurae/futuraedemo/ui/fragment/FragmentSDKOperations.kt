@@ -70,7 +70,6 @@ abstract class FragmentSDKOperations : BaseFragment() {
     abstract fun viewAdaptiveCollectionsButton(): MaterialButton
     abstract fun setAdaptiveThreshold(): MaterialButton
     abstract fun serviceLogoButton(): MaterialButton
-
     abstract fun timeLeftView(): TextView
     abstract fun sdkStatus(): TextView
 
@@ -288,6 +287,7 @@ abstract class FragmentSDKOperations : BaseFragment() {
                 clipboardMgr?.setPrimaryClip(clip)
             })
         } catch (e: FTUnlockRequiredException) {
+            Timber.e(e)
             showErrorAlert("SDK Unlock", e)
         }
     }
@@ -297,13 +297,15 @@ abstract class FragmentSDKOperations : BaseFragment() {
             try {
                 val result = FuturaeSDK.client.migrationApi.getMigratableAccounts().await()
                 if (result.migratableAccountInfos.isNotEmpty()) {
-                    val requiresPinProtection = result.pinProtected || localStorage.getPersistedSDKConfig().lockConfigurationType == LockConfigurationType.SDK_PIN_WITH_BIOMETRICS_OPTIONAL
+                    val requiresPinProtection =
+                        result.pinProtected || localStorage.getPersistedSDKConfig().lockConfigurationType == LockConfigurationType.SDK_PIN_WITH_BIOMETRICS_OPTIONAL
                     showDialog(
                         "SDK Account Migration",
                         "Restoring Accounts possible for:\n ${result.migratableAccountInfos.size} accounts."
                                 + "\n Requires PIN: $requiresPinProtection"
                                 + "\n Requires Adaptive: ${result.adaptiveEnabled}"
-                                + "\n Account names: \n ${result.migratableAccountInfos.joinToString { acc -> acc.username + ",\n" }}",
+                                + "\n Account names: \n ${result.migratableAccountInfos.joinToString { acc -> acc.username + ",\n" }}"
+                                + "\n Device IDs: \n ${result.migratableAccountInfos.joinToString { acc -> acc.deviceId + ",\n" }}",
                         "Proceed",
                         {
                             if (requiresPinProtection) {
@@ -343,16 +345,18 @@ abstract class FragmentSDKOperations : BaseFragment() {
         }
     }
 
-
     private fun onAccountsMigrationExecute() {
-        lifecycleScope.launch {
-            try {
-                val result = FuturaeSDK.client.migrationApi.migrateAccounts(
-                    MigrationUseCase.AccountsNotSecuredWithPinCode
-                ).await()
-                onMigrationSuccess(result)
-            } catch (t: Throwable) {
-                showErrorAlert("SDK Unlock", t)
+        requireContext().showInputDialog("Flow Binding Token") { token ->
+            lifecycleScope.launch {
+                try {
+                    val result = FuturaeSDK.client.migrationApi.migrateAccounts(
+                        MigrationUseCase.AccountsNotSecuredWithPinCode,
+                        token
+                    ).await()
+                    onMigrationSuccess(result)
+                } catch (t: Throwable) {
+                    showErrorAlert("SDK Unlock", t)
+                }
             }
         }
     }
@@ -373,15 +377,18 @@ abstract class FragmentSDKOperations : BaseFragment() {
     }
 
     private fun onAccountsMigrationWithSDKPINExecute() {
-        getPinWithCallback {
-            lifecycleScope.launch {
-                try {
-                    val result = FuturaeSDK.client.migrationApi.migrateAccounts(
-                        MigrationUseCase.AccountsSecuredWithPinCode(it)
-                    ).await()
-                    onMigrationSuccess(result)
-                } catch (t: Throwable) {
-                    showErrorAlert("SDK Unlock", t)
+        getPinWithCallback { pin ->
+            requireContext().showInputDialog("Flow Binding Token") { token ->
+                lifecycleScope.launch {
+                    try {
+                        val result = FuturaeSDK.client.migrationApi.migrateAccounts(
+                            MigrationUseCase.AccountsSecuredWithPinCode(pin),
+                            token,
+                        ).await()
+                        onMigrationSuccess(result)
+                    } catch (t: Throwable) {
+                        showErrorAlert("SDK Unlock", t)
+                    }
                 }
             }
         }
@@ -403,6 +410,7 @@ abstract class FragmentSDKOperations : BaseFragment() {
                         Toast.makeText(requireContext(), "Account Enrolled", Toast.LENGTH_SHORT)
                             .show()
                     } catch (t: Throwable) {
+                        Timber.e(t)
                         showErrorAlert("Enroll API error", t)
                     }
                 }

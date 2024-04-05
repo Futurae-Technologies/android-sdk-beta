@@ -79,9 +79,6 @@ class FragmentSDKUnlockBio : FragmentSDKOperations() {
         binding.buttonHotp.setOnClickListener {
             onHotpAuth()
         }
-        binding.buttonAccStatus.setOnClickListener {
-            getAccountsStatus()
-        }
         binding.unlockMethodsValue.text =
             FuturaeSDK.client.lockApi.getActiveUnlockMethods().joinToString()
     }
