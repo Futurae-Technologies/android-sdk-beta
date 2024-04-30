@@ -272,7 +272,8 @@ class FragmentSDKUnlockBioPin : FragmentSDKOperations() {
                 lifecycleScope.launch {
                     try {
                         FuturaeSDK.client.lockApi.unlock(
-                            WithSDKPin(it)
+                            WithSDKPin(it),
+                            shouldWaitForSDKSync = true
                         ).await()
                     } catch (t: Throwable) {
                         showErrorAlert("Lock API Error", t)

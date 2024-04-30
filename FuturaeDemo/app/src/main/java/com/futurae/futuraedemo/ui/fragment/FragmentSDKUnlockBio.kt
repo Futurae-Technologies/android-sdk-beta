@@ -44,8 +44,9 @@ class FragmentSDKUnlockBio : FragmentSDKOperations() {
                                 "Authenticate with biometrics",
                                 "Authentication is required to unlock SDK operations",
                                 "cancel",
-                            )
-                        )
+                            ),
+                        ),
+                        shouldWaitForSDKSync = true
                     ).await()
                 } catch (t: Throwable) {
                     showErrorAlert("SDK Unlock", t)
