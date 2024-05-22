@@ -37,17 +37,20 @@ class FragmentSDKUnlockBio : FragmentSDKOperations() {
             lifecycleScope.launch {
                 try {
                     FuturaeSDK.client.lockApi.unlock(
-                        WithBiometrics(
+                        userPresenceVerificationMode = WithBiometrics(
                             PresentationConfigurationForBiometricsPrompt(
                                 requireActivity(),
                                 "Unlock SDK",
                                 "Authenticate with biometrics",
                                 "Authentication is required to unlock SDK operations",
                                 "cancel",
-                            ),
+                            )
                         ),
                         shouldWaitForSDKSync = true
                     ).await()
+                    if (FuturaeSDK.client.adaptiveApi.isAdaptiveEnabled()) {
+                        FuturaeSDK.client.adaptiveApi.collectAndSubmitObservations()
+                    }
                 } catch (t: Throwable) {
                     showErrorAlert("SDK Unlock", t)
                 }

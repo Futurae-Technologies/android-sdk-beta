@@ -51,7 +51,7 @@ abstract class FuturaeActivity : AppCompatActivity() {
 
     protected var pendingUri: String? = null
 
-    private val permissionLauncher = registerForActivityResult(
+    protected val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissionResultMap ->
         if (permissionResultMap.values.contains(false)) {
@@ -175,11 +175,6 @@ abstract class FuturaeActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (FuturaeSDK.isAdaptiveEnabled()) {
-            permissionLauncher.launch(
-                requestAdaptivePermissions()
-            )
-        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             permissionLauncher.launch(
                 arrayOf(android.Manifest.permission.POST_NOTIFICATIONS)
@@ -227,19 +222,6 @@ abstract class FuturaeActivity : AppCompatActivity() {
         intent?.dataString?.takeIf { it.isNotBlank() }?.let { uriCall ->
             handleUri(uriCall)
         }
-    }
-
-    private fun requestAdaptivePermissions(): Array<String> {
-        val permissions = mutableListOf<String>()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            permissions.add(android.Manifest.permission.NEARBY_WIFI_DEVICES)
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            permissions.add(android.Manifest.permission.BLUETOOTH_SCAN)
-            permissions.add(android.Manifest.permission.BLUETOOTH_CONNECT)
-        }
-        permissions.add(android.Manifest.permission.ACCESS_FINE_LOCATION)
-        return permissions.toTypedArray()
     }
 
     override fun onResume() {

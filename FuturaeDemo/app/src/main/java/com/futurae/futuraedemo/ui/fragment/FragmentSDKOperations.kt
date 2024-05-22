@@ -3,6 +3,7 @@ package com.futurae.futuraedemo.ui.fragment
 import android.app.Activity
 import android.content.ClipData
 import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
@@ -73,6 +74,8 @@ abstract class FragmentSDKOperations : BaseFragment() {
     abstract fun timeLeftView(): TextView
     abstract fun sdkStatus(): TextView
 
+    private var listener : Listener? = null
+
     protected val localStorage: LocalStorage by lazy {
         LocalStorage(requireContext())
     }
@@ -85,20 +88,31 @@ abstract class FragmentSDKOperations : BaseFragment() {
             }
         }
 
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        listener = context as Listener
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+        listener = null
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         toggleAdaptiveButton().setOnClickListener {
-            if (FuturaeSDK.isAdaptiveEnabled()) {
-                FuturaeSDK.disableAdaptive()
+            if (FuturaeSDK.client.adaptiveApi.isAdaptiveEnabled()) {
+                FuturaeSDK.client.adaptiveApi.disableAdaptive()
                 toggleAdaptiveButton().text = "Enable Adaptive"
             } else {
-                FuturaeSDK.enableAdaptive(requireActivity().application)
+                FuturaeSDK.client.adaptiveApi.enableAdaptive(requireActivity().application)
                 toggleAdaptiveButton().text = "Disable Adaptive"
+                listener?.requestAdaptivePermissions()
             }
         }
         viewAdaptiveCollectionsButton().setOnClickListener {
-            if (FuturaeSDK.isAdaptiveEnabled()) {
+            if (FuturaeSDK.client.adaptiveApi.isAdaptiveEnabled()) {
                 startActivity(
                     Intent(context, AdaptiveViewerActivity::class.java)
                 )
@@ -107,10 +121,10 @@ abstract class FragmentSDKOperations : BaseFragment() {
             }
         }
         toggleAdaptiveButton().text =
-            if (FuturaeSDK.isAdaptiveEnabled()) "Disable Adaptive" else "Enable Adaptive"
+            if (FuturaeSDK.client.adaptiveApi.isAdaptiveEnabled()) "Disable Adaptive" else "Enable Adaptive"
 
         setAdaptiveThreshold().setOnClickListener {
-            if (FuturaeSDK.isAdaptiveEnabled()) {
+            if (FuturaeSDK.client.adaptiveApi.isAdaptiveEnabled()) {
                 var sliderValue = AdaptiveSDK.getAdaptiveCollectionThreshold()
                 val dialogView = layoutInflater.inflate(R.layout.dialog_adaptive_time, null)
                 val textValue = dialogView.findViewById<TextView>(R.id.sliderValue).apply {
@@ -228,24 +242,6 @@ abstract class FragmentSDKOperations : BaseFragment() {
         getQRCodeCallback.launch(
             FTRQRCodeActivity.getIntent(requireContext(), true, false),
         )
-    }
-
-    protected fun onLogout() {
-        // For demo purposes, we simply logout the first account we can find
-        val accounts = getAccounts()
-        if (accounts.isEmpty()) {
-            showAlert("Error", "No account to logout")
-            return
-        }
-        lifecycleScope.launch {
-            val account = accounts[0]
-            try {
-                FuturaeSDK.client.accountApi.logoutAccount(account.userId).await()
-                showAlert("Success", "Logged out " + account.username)
-            } catch (t: Throwable) {
-                showErrorAlert("SDK Unlock", t)
-            }
-        }
     }
 
     protected fun onTOTPAuth() {
@@ -648,5 +644,9 @@ abstract class FragmentSDKOperations : BaseFragment() {
             msg,
             Toast.LENGTH_SHORT
         ).show()
+    }
+    interface Listener {
+
+        fun requestAdaptivePermissions()
     }
 }

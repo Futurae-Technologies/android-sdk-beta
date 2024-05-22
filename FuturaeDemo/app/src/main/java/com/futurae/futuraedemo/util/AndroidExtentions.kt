@@ -55,8 +55,6 @@ fun Fragment.showAlert(
     message: String
 ) {
     Timber.i(message)
-    val context = this.context ?: return
-    context.showAlert(title, message)
     if(this.isResumed) {
         requireContext().showAlert(title, message)
     }
@@ -67,8 +65,6 @@ fun Fragment.showErrorAlert(
     throwable: Throwable
 ) {
     Timber.e(throwable)
-    val context = this.context ?: return
-    context.showAlert(title, "Error:\n${throwable.localizedMessage}")
     if(this.isResumed) {
         requireContext().showAlert(title, "Error:\n${throwable.localizedMessage}")
     }

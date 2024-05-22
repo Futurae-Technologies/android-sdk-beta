@@ -236,7 +236,7 @@ class FragmentSDKUnlockBioPin : FragmentSDKOperations() {
             lifecycleScope.launch {
                 try {
                     FuturaeSDK.client.lockApi.unlock(
-                        WithBiometrics(
+                        userPresenceVerificationMode = WithBiometrics(
                             PresentationConfigurationForBiometricsPrompt(
                                 requireActivity(),
                                 "Unlock SDK",
@@ -244,8 +244,12 @@ class FragmentSDKUnlockBioPin : FragmentSDKOperations() {
                                 "Authentication is required to unlock SDK operations",
                                 "cancel",
                             )
-                        )
+                        ),
+                        shouldWaitForSDKSync = true
                     ).await()
+                    if(FuturaeSDK.client.adaptiveApi.isAdaptiveEnabled()) {
+                        FuturaeSDK.client.adaptiveApi.collectAndSubmitObservations()
+                    }
                 } catch (t: Throwable) {
                     showErrorAlert("Lock API Error", t)
                 }
@@ -272,9 +276,12 @@ class FragmentSDKUnlockBioPin : FragmentSDKOperations() {
                 lifecycleScope.launch {
                     try {
                         FuturaeSDK.client.lockApi.unlock(
-                            WithSDKPin(it),
+                            userPresenceVerificationMode = WithSDKPin(it),
                             shouldWaitForSDKSync = true
                         ).await()
+                        if(FuturaeSDK.client.adaptiveApi.isAdaptiveEnabled()) {
+                            FuturaeSDK.client.adaptiveApi.collectAndSubmitObservations()
+                        }
                     } catch (t: Throwable) {
                         showErrorAlert("Lock API Error", t)
                     }

@@ -13,7 +13,6 @@ import androidx.lifecycle.lifecycleScope
 import com.futurae.futuraedemo.databinding.FragmentSdkSettingsBinding
 import com.futurae.futuraedemo.ui.activity.ActivitySDKConfiguration
 import com.futurae.futuraedemo.ui.activity.EXTRA_CONFIG
-import com.futurae.futuraedemo.ui.activity.EXTRA_PIN
 import com.futurae.futuraedemo.util.showAlert
 import com.futurae.futuraedemo.util.showErrorAlert
 import com.futurae.sdk.FuturaeSDK
@@ -165,6 +164,7 @@ class FragmentSettings : BaseFragment() {
                         "SDK Encrypted Storage error",
                         e
                     )
+
                     is FTInvalidStateException -> showErrorAlert("SDK Uninitialized", e)
                     is FTCorruptedStateException -> showErrorAlert("SDK Corrupted", e)
                 }
@@ -172,7 +172,8 @@ class FragmentSettings : BaseFragment() {
         }
         binding.buttonCheckPubUploaded.setOnClickListener {
             val keyUploaded = FuturaeSDK.client.operationsApi.isPublicKeyUploaded()
-            Toast.makeText(requireContext(), "PK uploaded: ${keyUploaded}", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), "PK uploaded: ${keyUploaded}", Toast.LENGTH_SHORT)
+                .show()
         }
         binding.buttonUploadPK.setOnClickListener {
             lifecycleScope.launch {

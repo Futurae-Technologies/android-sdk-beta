@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import androidx.activity.result.contract.ActivityResultContracts
@@ -13,6 +14,7 @@ import com.futurae.futuraedemo.R
 import com.futurae.futuraedemo.databinding.ActivityFragmentContainerBinding
 import com.futurae.futuraedemo.ui.fragment.FragmentConfiguration
 import com.futurae.futuraedemo.ui.fragment.FragmentMain
+import com.futurae.futuraedemo.ui.fragment.FragmentSDKOperations
 import com.futurae.futuraedemo.ui.fragment.FragmentSettings
 import com.futurae.futuraedemo.ui.qr_push_action.QRCodeFlowOpenCoordinator
 import com.futurae.futuraedemo.ui.qr_push_action.QRCodeRequestedActionHandler
@@ -31,7 +33,7 @@ import com.futurae.sdk.public_api.exception.FTLockInvalidConfigurationException
 import com.futurae.sdk.public_api.exception.FTLockMechanismUnavailableException
 
 
-class MainActivity : FuturaeActivity(), FragmentConfiguration.Listener, FragmentSettings.Listener {
+class MainActivity : FuturaeActivity(), FragmentConfiguration.Listener, FragmentSettings.Listener, FragmentSDKOperations.Listener {
 
     lateinit var binding: ActivityFragmentContainerBinding
 
@@ -153,6 +155,7 @@ class MainActivity : FuturaeActivity(), FragmentConfiguration.Listener, Fragment
                         }
                     )
                 }
+
                 else -> showErrorAlert("SDK initialization failed", e)
             }
         }
@@ -217,4 +220,18 @@ class MainActivity : FuturaeActivity(), FragmentConfiguration.Listener, Fragment
 
     }
 
+    override fun requestAdaptivePermissions() = permissionLauncher.launch(getAdaptivePermissions())
+
+    private fun getAdaptivePermissions(): Array<String> {
+        val permissions = mutableListOf<String>()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            permissions.add(android.Manifest.permission.NEARBY_WIFI_DEVICES)
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            permissions.add(android.Manifest.permission.BLUETOOTH_SCAN)
+            permissions.add(android.Manifest.permission.BLUETOOTH_CONNECT)
+        }
+        permissions.add(android.Manifest.permission.ACCESS_FINE_LOCATION)
+        return permissions.toTypedArray()
+    }
 }
