@@ -233,6 +233,14 @@
 				android:layout_gravity="center"
 				android:text="Check biometric invalidation" />
 
+			<com.google.android.material.button.MaterialButton
+				android:id="@+id/buttonAccountInfo"
+				style="@style/AppTheme.Button"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_gravity="center"
+				android:text="Account Info" />
+
 		</LinearLayout>
 
 	</ScrollView>

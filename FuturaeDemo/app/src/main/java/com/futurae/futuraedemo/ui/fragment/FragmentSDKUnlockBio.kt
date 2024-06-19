@@ -30,6 +30,7 @@ class FragmentSDKUnlockBio : FragmentSDKOperations() {
     override fun timeLeftView(): TextView = binding.textTimerValue
 
     override fun sdkStatus(): TextView = binding.textStatusValue
+    override fun accountInfoButton(): View = binding.buttonAccountInfo
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

@@ -458,4 +458,5 @@ class FragmentSDKUnlockBioPin : FragmentSDKOperations() {
     override fun serviceLogoButton(): MaterialButton = binding.buttonServiceLogo
     override fun timeLeftView(): TextView = binding.textTimerValue
     override fun sdkStatus(): TextView = binding.textStatusValue
+    override fun accountInfoButton(): View = binding.buttonAccountInfo
 }

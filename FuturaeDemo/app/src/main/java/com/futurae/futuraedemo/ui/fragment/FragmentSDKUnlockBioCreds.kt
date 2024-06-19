@@ -43,7 +43,7 @@ class FragmentSDKUnlockBioCreds : FragmentSDKOperations() {
                         ),
                         shouldWaitForSDKSync = true
                     ).await()
-                    if(FuturaeSDK.client.adaptiveApi.isAdaptiveEnabled()) {
+                    if (FuturaeSDK.client.adaptiveApi.isAdaptiveEnabled()) {
                         FuturaeSDK.client.adaptiveApi.collectAndSubmitObservations()
                     }
                 } catch (t: Throwable) {
@@ -92,4 +92,5 @@ class FragmentSDKUnlockBioCreds : FragmentSDKOperations() {
     override fun serviceLogoButton(): MaterialButton = binding.buttonServiceLogo
     override fun timeLeftView(): TextView = binding.textTimerValue
     override fun sdkStatus(): TextView = binding.textStatusValue
+    override fun accountInfoButton(): View = binding.buttonAccountInfo
 }

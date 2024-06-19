@@ -73,8 +73,9 @@ abstract class FragmentSDKOperations : BaseFragment() {
     abstract fun serviceLogoButton(): MaterialButton
     abstract fun timeLeftView(): TextView
     abstract fun sdkStatus(): TextView
+    abstract fun accountInfoButton(): View
 
-    private var listener : Listener? = null
+    private var listener: Listener? = null
 
     protected val localStorage: LocalStorage by lazy {
         LocalStorage(requireContext())
@@ -169,6 +170,21 @@ abstract class FragmentSDKOperations : BaseFragment() {
                             dialog.dismiss()
                         }.create()
                 dialog.show()
+            } else {
+                Toast.makeText(requireContext(), "No account enrolled", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        accountInfoButton().setOnClickListener {
+            val ftAccounts = getAccounts()
+            if (ftAccounts.isNotEmpty()) {
+                val ftAccount = ftAccounts.first()
+                showAlert(
+                    "Account Info",
+                    ("Account id: ${ftAccount.userId}," +
+                            "\nAccount username: ${ftAccount.username}," +
+                            "\nService name: ${ftAccount.serviceName}").trimIndent()
+                )
             } else {
                 Toast.makeText(requireContext(), "No account enrolled", Toast.LENGTH_SHORT).show()
             }
@@ -645,6 +661,7 @@ abstract class FragmentSDKOperations : BaseFragment() {
             Toast.LENGTH_SHORT
         ).show()
     }
+
     interface Listener {
 
         fun requestAdaptivePermissions()
