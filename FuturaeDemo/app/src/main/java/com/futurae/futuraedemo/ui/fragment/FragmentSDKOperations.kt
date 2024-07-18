@@ -250,7 +250,8 @@ abstract class FragmentSDKOperations : BaseFragment() {
         showAlert(
             "Accounts Status Response",
             "Statuses: \n ${result.statuses.joinToString { accStat -> accStat.userId + "\n" }}"
-                    + "Feature Flags: $featureFlagsText"
+                    + "Feature Flags: $featureFlagsText" + "\n"
+                    + "API Messages: ${result.messages.joinToString { msg -> "${msg.message}\n" }}"
         )
     }
 
