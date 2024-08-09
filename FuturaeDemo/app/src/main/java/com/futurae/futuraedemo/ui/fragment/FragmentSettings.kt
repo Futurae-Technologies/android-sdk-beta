@@ -13,6 +13,8 @@ import androidx.lifecycle.lifecycleScope
 import com.futurae.futuraedemo.databinding.FragmentSdkSettingsBinding
 import com.futurae.futuraedemo.ui.activity.ActivitySDKConfiguration
 import com.futurae.futuraedemo.ui.activity.EXTRA_CONFIG
+import com.futurae.futuraedemo.ui.activity.adaptive.AdaptiveOverviewActivity
+import com.futurae.futuraedemo.util.getParcelable
 import com.futurae.futuraedemo.util.showAlert
 import com.futurae.futuraedemo.util.showErrorAlert
 import com.futurae.sdk.FuturaeSDK
@@ -42,16 +44,16 @@ class FragmentSettings : BaseFragment() {
     private val launchSDKConfiguration =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == RESULT_OK && result.data?.hasExtra(EXTRA_CONFIG) == true) {
-                val config =
-                    result.data?.getParcelableExtra<SDKConfiguration>(EXTRA_CONFIG) as SDKConfiguration
-                if (config.lockConfigurationType == LockConfigurationType.SDK_PIN_WITH_BIOMETRICS_OPTIONAL) {
-                    getPinWithCallback {
-                        switchConfiguration(config, it)
+                result.data?.getParcelable(EXTRA_CONFIG, SDKConfiguration::class.java)
+                    ?.let { config ->
+                        if (config.lockConfigurationType == LockConfigurationType.SDK_PIN_WITH_BIOMETRICS_OPTIONAL) {
+                            getPinWithCallback {
+                                switchConfiguration(config, it)
+                            }
+                        } else {
+                            switchConfiguration(config, null)
+                        }
                     }
-                } else {
-                    switchConfiguration(config, null)
-                }
-
             }
         }
 
@@ -183,6 +185,9 @@ class FragmentSettings : BaseFragment() {
                     Timber.e(t)
                 }
             }
+        }
+        binding.buttonAdaptiveOverview.setOnClickListener {
+            startActivity(Intent(requireContext(), AdaptiveOverviewActivity::class.java))
         }
     }
 

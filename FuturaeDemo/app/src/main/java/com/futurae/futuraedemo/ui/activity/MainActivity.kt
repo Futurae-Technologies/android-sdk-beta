@@ -4,18 +4,15 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
-import androidx.core.view.isVisible
 import com.futurae.futuraedemo.R
 import com.futurae.futuraedemo.databinding.ActivityFragmentContainerBinding
 import com.futurae.futuraedemo.ui.fragment.FragmentConfiguration
 import com.futurae.futuraedemo.ui.fragment.FragmentMain
 import com.futurae.futuraedemo.ui.fragment.FragmentPin
-import com.futurae.futuraedemo.ui.fragment.FragmentSDKOperations
 import com.futurae.futuraedemo.ui.fragment.FragmentSettings
 import com.futurae.futuraedemo.ui.qr_push_action.QRCodeFlowOpenCoordinator
 import com.futurae.futuraedemo.ui.qr_push_action.QRCodeRequestedActionHandler
@@ -41,8 +38,7 @@ import com.futurae.sdk.public_api.lock.model.WithSDKPin
 import kotlinx.coroutines.launch
 
 
-class MainActivity : FuturaeActivity(), FragmentConfiguration.Listener, FragmentSettings.Listener,
-    FragmentSDKOperations.Listener {
+class MainActivity : FuturaeActivity(), FragmentConfiguration.Listener, FragmentSettings.Listener {
 
     lateinit var binding: ActivityFragmentContainerBinding
 
@@ -88,7 +84,7 @@ class MainActivity : FuturaeActivity(), FragmentConfiguration.Listener, Fragment
         }
     }
 
-    override fun onNewIntent(intent: Intent?) {
+    override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
 
         // handling when activity was launched when intent came in
@@ -113,14 +109,6 @@ class MainActivity : FuturaeActivity(), FragmentConfiguration.Listener, Fragment
             .beginTransaction()
             .replace(R.id.fragmentContainer, FragmentConfiguration())
             .commit()
-    }
-
-    override fun showLoading() {
-        binding.progressLayout.isVisible = true
-    }
-
-    override fun hideLoading() {
-        binding.progressLayout.isVisible = false
     }
 
     override fun onConfigurationSelected(sdkConfiguration: SDKConfiguration) {
@@ -263,21 +251,6 @@ class MainActivity : FuturaeActivity(), FragmentConfiguration.Listener, Fragment
             }
         }
 
-    }
-
-    override fun requestAdaptivePermissions() = permissionLauncher.launch(getAdaptivePermissions())
-
-    private fun getAdaptivePermissions(): Array<String> {
-        val permissions = mutableListOf<String>()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            permissions.add(android.Manifest.permission.NEARBY_WIFI_DEVICES)
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            permissions.add(android.Manifest.permission.BLUETOOTH_SCAN)
-            permissions.add(android.Manifest.permission.BLUETOOTH_CONNECT)
-        }
-        permissions.add(android.Manifest.permission.ACCESS_FINE_LOCATION)
-        return permissions.toTypedArray()
     }
 
     protected fun getPinWithCallback(callback: (CharArray) -> Unit) {

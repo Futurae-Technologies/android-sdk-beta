@@ -12,6 +12,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.lifecycleScope
 import com.futurae.futuraedemo.databinding.FragmentSdkUnlockBioPinBinding
 import com.futurae.futuraedemo.ui.activity.FTRQRCodeActivity
+import com.futurae.futuraedemo.util.getParcelable
 import com.futurae.futuraedemo.util.showAlert
 import com.futurae.futuraedemo.util.showDialog
 import com.futurae.futuraedemo.util.showErrorAlert
@@ -54,7 +55,10 @@ class FragmentSDKUnlockBioPin : FragmentSDKOperations() {
     private val getQRCodeCallback =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
             if (result.resultCode == Activity.RESULT_OK) {
-                (result.data?.getParcelableExtra(FTRQRCodeActivity.PARAM_BARCODE) as? Barcode)?.let { qrcode ->
+                result.data?.getParcelable(
+                    FTRQRCodeActivity.PARAM_BARCODE,
+                    Barcode::class.java
+                )?.let { qrcode ->
                     when (currentRequest) {
                         REQUEST_ENROLL_WITH_PIN -> {
                             if (FTQRCodeUtils.getQrcodeType(qrcode.rawValue) == FTQRCodeUtils.QRType.Enroll) {
@@ -247,7 +251,7 @@ class FragmentSDKUnlockBioPin : FragmentSDKOperations() {
                         ),
                         shouldWaitForSDKSync = true
                     ).await()
-                    if(FuturaeSDK.client.adaptiveApi.isAdaptiveEnabled()) {
+                    if (FuturaeSDK.client.adaptiveApi.isAdaptiveEnabled()) {
                         FuturaeSDK.client.adaptiveApi.collectAndSubmitObservations()
                     }
                 } catch (t: Throwable) {
@@ -279,7 +283,7 @@ class FragmentSDKUnlockBioPin : FragmentSDKOperations() {
                             userPresenceVerificationMode = WithSDKPin(it),
                             shouldWaitForSDKSync = true
                         ).await()
-                        if(FuturaeSDK.client.adaptiveApi.isAdaptiveEnabled()) {
+                        if (FuturaeSDK.client.adaptiveApi.isAdaptiveEnabled()) {
                             FuturaeSDK.client.adaptiveApi.collectAndSubmitObservations()
                         }
                     } catch (t: Throwable) {
@@ -447,13 +451,6 @@ class FragmentSDKUnlockBioPin : FragmentSDKOperations() {
             }
         }
     }
-
-    override fun toggleAdaptiveButton(): MaterialButton = binding.buttonAdaptive
-
-    override fun viewAdaptiveCollectionsButton(): MaterialButton =
-        binding.buttonViewAdaptiveCollections
-
-    override fun setAdaptiveThreshold(): MaterialButton = binding.buttonConfigureAdaptiveTime
 
     override fun serviceLogoButton(): MaterialButton = binding.buttonServiceLogo
     override fun timeLeftView(): TextView = binding.textTimerValue

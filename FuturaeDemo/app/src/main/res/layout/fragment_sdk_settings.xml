@@ -109,6 +109,13 @@
                 android:layout_marginTop="10dp"
                 android:text="Upload Pub K" />
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonAdaptiveOverview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="Adaptive Overview" />
+
         </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>

@@ -20,7 +20,6 @@ fun Context.showInputDialog(hint : String, onValueProvided: (String) -> Unit) {
         .setView(dialogView)
         .setPositiveButton("ok") { dialog, _ ->
             val input = dialogView.findViewById<AppCompatEditText>(R.id.edittext).text.toString()
-                .replace(" ", "")
 
             onValueProvided(input)
             dialog.dismiss()

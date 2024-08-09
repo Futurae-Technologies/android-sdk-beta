@@ -82,13 +82,6 @@ class FragmentSDKUnlockBioCreds : FragmentSDKOperations() {
             FuturaeSDK.client.lockApi.getActiveUnlockMethods().joinToString()
     }
 
-    override fun toggleAdaptiveButton(): MaterialButton = binding.buttonAdaptive
-
-    override fun viewAdaptiveCollectionsButton(): MaterialButton =
-        binding.buttonViewAdaptiveCollections
-
-    override fun setAdaptiveThreshold(): MaterialButton = binding.buttonConfigureAdaptiveTime
-
     override fun serviceLogoButton(): MaterialButton = binding.buttonServiceLogo
     override fun timeLeftView(): TextView = binding.textTimerValue
     override fun sdkStatus(): TextView = binding.textStatusValue

@@ -15,6 +15,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.futurae.futuraedemo.util.getParcelable
 import com.futurae.futuraedemo.util.showAlert
 import com.futurae.futuraedemo.util.showDialog
 import com.futurae.futuraedemo.util.showErrorAlert
@@ -58,17 +59,15 @@ abstract class FuturaeActivity : AppCompatActivity() {
             AlertDialog.Builder(this)
                 .setTitle("Missing Adaptive Permissions")
                 .setMessage("Make sure to grant all adaptive permissions to make the best out of the functionality. Press Settings to grant missing permissions")
-                .setPositiveButton("Settings") { v, which ->
+                .setPositiveButton("Settings") { _, _ ->
                     startActivity(
                         Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
                             data = Uri.fromParts("package", packageName, null)
                         }
                     )
                 }
-                .setNegativeButton("Cancel") { v, w ->
-                    {
-                        //nothing
-                    }
+                .setNegativeButton("Cancel") { _, _ ->
+                    //nothing
                 }
                 .show()
         }
@@ -98,7 +97,10 @@ abstract class FuturaeActivity : AppCompatActivity() {
                 }
 
                 FTNotificationUtils.INTENT_APPROVE_AUTH_MESSAGE -> {
-                    (intent.getParcelableExtra(FTNotificationUtils.PARAM_APPROVE_SESSION) as? ApproveSession)?.let { approveSession ->
+                    (intent.getParcelable(
+                        FTNotificationUtils.PARAM_APPROVE_SESSION,
+                        ApproveSession::class.java
+                    ))?.let { approveSession ->
                         val userId = FTNotificationUtils.getUserId(intent)
                         val encryptedExtras = FTNotificationUtils.getEncyptedExtras(intent)
 
@@ -216,10 +218,10 @@ abstract class FuturaeActivity : AppCompatActivity() {
         pendingUri = null
     }
 
-    override fun onNewIntent(intent: Intent?) {
+    override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         //Handle URI from intent
-        intent?.dataString?.takeIf { it.isNotBlank() }?.let { uriCall ->
+        intent.dataString?.takeIf { it.isNotBlank() }?.let { uriCall ->
             handleUri(uriCall)
         }
     }
@@ -373,8 +375,4 @@ abstract class FuturaeActivity : AppCompatActivity() {
             alertDialog.show()
         }
     }
-
-
-    abstract fun showLoading()
-    abstract fun hideLoading()
 }

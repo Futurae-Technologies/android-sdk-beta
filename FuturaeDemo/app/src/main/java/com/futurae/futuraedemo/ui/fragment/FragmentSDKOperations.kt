@@ -5,6 +5,7 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageView
@@ -12,6 +13,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat.getSystemService
 import androidx.lifecycle.lifecycleScope
@@ -19,11 +21,12 @@ import com.bumptech.glide.Glide
 import com.futurae.futuraedemo.R
 import com.futurae.futuraedemo.ui.AccountSelectionSheet
 import com.futurae.futuraedemo.ui.activity.ActivityAccountHistory
-import com.futurae.futuraedemo.ui.activity.AdaptiveViewerActivity
+import com.futurae.futuraedemo.ui.activity.adaptive.AdaptiveCollectionsOverviewActivity
 import com.futurae.futuraedemo.ui.activity.FTRQRCodeActivity
 import com.futurae.futuraedemo.ui.activity.FuturaeActivity
 import com.futurae.futuraedemo.ui.qr_push_action.QRCodeFlowOpenCoordinator
 import com.futurae.futuraedemo.util.LocalStorage
+import com.futurae.futuraedemo.util.getParcelable
 import com.futurae.futuraedemo.util.showAlert
 import com.futurae.futuraedemo.util.showDialog
 import com.futurae.futuraedemo.util.showErrorAlert
@@ -67,15 +70,11 @@ import timber.log.Timber
  * can implement only the lock/unlocking flow.
  */
 abstract class FragmentSDKOperations : BaseFragment() {
-    abstract fun toggleAdaptiveButton(): MaterialButton
-    abstract fun viewAdaptiveCollectionsButton(): MaterialButton
-    abstract fun setAdaptiveThreshold(): MaterialButton
     abstract fun serviceLogoButton(): MaterialButton
     abstract fun timeLeftView(): TextView
     abstract fun sdkStatus(): TextView
     abstract fun accountInfoButton(): View
 
-    private var listener: Listener? = null
 
     protected val localStorage: LocalStorage by lazy {
         LocalStorage(requireContext())
@@ -89,68 +88,8 @@ abstract class FragmentSDKOperations : BaseFragment() {
             }
         }
 
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        listener = context as Listener
-    }
-
-    override fun onDetach() {
-        super.onDetach()
-        listener = null
-    }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        toggleAdaptiveButton().setOnClickListener {
-            if (FuturaeSDK.client.adaptiveApi.isAdaptiveEnabled()) {
-                FuturaeSDK.client.adaptiveApi.disableAdaptive()
-                toggleAdaptiveButton().text = "Enable Adaptive"
-            } else {
-                FuturaeSDK.client.adaptiveApi.enableAdaptive(requireActivity().application)
-                toggleAdaptiveButton().text = "Disable Adaptive"
-                listener?.requestAdaptivePermissions()
-            }
-        }
-        viewAdaptiveCollectionsButton().setOnClickListener {
-            if (FuturaeSDK.client.adaptiveApi.isAdaptiveEnabled()) {
-                startActivity(
-                    Intent(context, AdaptiveViewerActivity::class.java)
-                )
-            } else {
-                showAlert("Adaptive", "Please enable Adaptive to see your collections.")
-            }
-        }
-        toggleAdaptiveButton().text =
-            if (FuturaeSDK.client.adaptiveApi.isAdaptiveEnabled()) "Disable Adaptive" else "Enable Adaptive"
-
-        setAdaptiveThreshold().setOnClickListener {
-            if (FuturaeSDK.client.adaptiveApi.isAdaptiveEnabled()) {
-                var sliderValue = AdaptiveSDK.getAdaptiveCollectionThreshold()
-                val dialogView = layoutInflater.inflate(R.layout.dialog_adaptive_time, null)
-                val textValue = dialogView.findViewById<TextView>(R.id.sliderValue).apply {
-                    text = "$sliderValue sec"
-                }
-                dialogView.findViewById<Slider>(R.id.slider).apply {
-                    value = sliderValue.toFloat()
-                    addOnChangeListener { _, value, _ ->
-                        sliderValue = value.toInt()
-                        textValue.text = "${value.toInt()} sec"
-                    }
-                }
-                val dialog = AlertDialog.Builder(
-                    requireContext(),
-                    com.google.android.material.R.style.Theme_Material3_Light_Dialog
-                )
-                    .setTitle("Adaptive time threshold").setView(dialogView)
-                    .setPositiveButton("OK") { dialog, which ->
-                        AdaptiveSDK.setAdaptiveCollectionThreshold(sliderValue)
-                    }.create()
-                dialog.show()
-            } else {
-                showAlert("Adaptive SDK", "Please initialize/enable Adaptive SDK first")
-            }
-        }
 
         serviceLogoButton().setOnClickListener {
             val ftAccounts = getAccounts()
@@ -166,10 +105,25 @@ abstract class FragmentSDKOperations : BaseFragment() {
                         com.google.android.material.R.style.Theme_Material3_Light_Dialog
                     )
                         .setTitle("Service Logo")
-                        .setView(dialogView).setPositiveButton("OK") { dialog, which ->
+                        .setView(dialogView).setPositiveButton("OK") { dialog, _ ->
                             dialog.dismiss()
                         }.create()
                 dialog.show()
+            } else {
+                Toast.makeText(requireContext(), "No account enrolled", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        accountInfoButton().setOnClickListener {
+            val ftAccounts = getAccounts()
+            if (ftAccounts.isNotEmpty()) {
+                val ftAccount = ftAccounts.first()
+                showAlert(
+                    "Account Info",
+                    ("Account id: ${ftAccount.userId}," +
+                            "\nAccount username: ${ftAccount.username}," +
+                            "\nService name: ${ftAccount.serviceName}").trimIndent()
+                )
             } else {
                 Toast.makeText(requireContext(), "No account enrolled", Toast.LENGTH_SHORT).show()
             }
@@ -250,8 +204,7 @@ abstract class FragmentSDKOperations : BaseFragment() {
         showAlert(
             "Accounts Status Response",
             "Statuses: \n ${result.statuses.joinToString { accStat -> accStat.userId + "\n" }}"
-                    + "Feature Flags: $featureFlagsText" + "\n"
-                    + "API Messages: ${result.messages.joinToString { msg -> "${msg.message}\n" }}"
+                    + "Feature Flags: $featureFlagsText"
         )
     }
 
@@ -409,7 +362,10 @@ abstract class FragmentSDKOperations : BaseFragment() {
 
     // QRCode callbacks
     private fun onEnrollQRCodeScanned(data: Intent) {
-        (data.getParcelableExtra(FTRQRCodeActivity.PARAM_BARCODE) as? Barcode)?.let { qrcode ->
+        data.getParcelable(
+            FTRQRCodeActivity.PARAM_BARCODE,
+            Barcode::class.java
+        )?.let { qrcode ->
             requireContext().showInputDialog("Flow Binding Token") { token ->
                 lifecycleScope.launch {
                     try {
@@ -460,7 +416,10 @@ abstract class FragmentSDKOperations : BaseFragment() {
     }
 
     private fun onAuthQRCodeScanned(data: Intent) {
-        (data.getParcelableExtra(FTRQRCodeActivity.PARAM_BARCODE) as? Barcode)?.let { qrcode ->
+        data.getParcelable(
+            FTRQRCodeActivity.PARAM_BARCODE,
+            Barcode::class.java
+        )?.let { qrcode ->
             val userId: String?
             val sessionToken: String?
             try {
@@ -536,16 +495,17 @@ abstract class FragmentSDKOperations : BaseFragment() {
     }
 
     protected fun onAnonymousQRCodeScanned(data: Intent) {
-        (data.getParcelableExtra(FTRQRCodeActivity.PARAM_BARCODE) as? Barcode)?.let { barcode ->
-            val modalBottomSheet = AccountSelectionSheet().apply {
-                listener = object : AccountSelectionSheet.Listener {
-                    override fun onAccountSelected(userId: String) {
-                        handleUsernamelessQr(barcode.rawValue, userId)
+        data.getParcelable(FTRQRCodeActivity.PARAM_BARCODE, Barcode::class.java)
+            ?.let { barcode ->
+                val modalBottomSheet = AccountSelectionSheet().apply {
+                    listener = object : AccountSelectionSheet.Listener {
+                        override fun onAccountSelected(userId: String) {
+                            handleUsernamelessQr(barcode.rawValue, userId)
+                        }
                     }
                 }
+                modalBottomSheet.show(childFragmentManager, AccountSelectionSheet.TAG)
             }
-            modalBottomSheet.show(childFragmentManager, AccountSelectionSheet.TAG)
-        }
     }
 
     private fun handleUsernamelessQr(qrCode: String, userId: String) {
@@ -603,7 +563,10 @@ abstract class FragmentSDKOperations : BaseFragment() {
     }
 
     protected fun onOfflineAuthQRCodeScanned(data: Intent) {
-        (data.getParcelableExtra(FTRQRCodeActivity.PARAM_BARCODE) as? Barcode)?.let { barcode ->
+        data.getParcelable(
+            FTRQRCodeActivity.PARAM_BARCODE,
+            Barcode::class.java
+        )?.let { barcode ->
             val qrCode = barcode.rawValue
             val extras: List<ApproveInfo>? = try {
                 FuturaeSDK.client.sessionApi.extractQRCodeExtraInfo(qrCode)
@@ -642,12 +605,16 @@ abstract class FragmentSDKOperations : BaseFragment() {
     }
 
     protected fun onQRCodeScanned(data: Intent) {
-        (data.getParcelableExtra(FTRQRCodeActivity.PARAM_BARCODE) as? Barcode)?.let { qrcode ->
+        data.getParcelable(
+            FTRQRCodeActivity.PARAM_BARCODE,
+            Barcode::class.java
+        )?.let { qrcode ->
             when (FTQRCodeUtils.getQrcodeType(qrcode.rawValue)) {
                 FTQRCodeUtils.QRType.Enroll -> onEnrollQRCodeScanned(data)
                 FTQRCodeUtils.QRType.Offline -> onOfflineAuthQRCodeScanned(data)
                 FTQRCodeUtils.QRType.Online -> onAuthQRCodeScanned(data)
                 FTQRCodeUtils.QRType.Usernameless -> onAnonymousQRCodeScanned(data)
+                FTQRCodeUtils.QRType.Invalid -> showErrorAlert("QR Code Error", IllegalStateException("Invalid QR code. Matches none of know types."))
             }
         }
     }
@@ -661,10 +628,5 @@ abstract class FragmentSDKOperations : BaseFragment() {
             msg,
             Toast.LENGTH_SHORT
         ).show()
-    }
-
-    interface Listener {
-
-        fun requestAdaptivePermissions()
     }
 }

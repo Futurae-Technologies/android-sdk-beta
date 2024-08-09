@@ -103,7 +103,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-messaging-ktx'
 
     // Futurae SDK
-    implementation 'com.futurae.sdk:futuraekit-beta:3.0.8-beta'
+    implementation 'com.futurae.sdk:futuraekit-beta:3.1.0-beta'
     // OPTIONAL - Adaptive SDK.
     implementation 'com.futurae.sdk:adaptive:1.0.3-alpha'
 
