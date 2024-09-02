@@ -43,13 +43,13 @@ fun Context.showAlert(
 ) {
     android.os.Handler(Looper.getMainLooper()).post {
         AlertDialog.Builder(this)
-                .setTitle(title)
-                .setMessage(message)
-                .setPositiveButton("ok") { dialog, _ ->
-                    dialog.dismiss()
-                }
-                .create()
-                .show()
+            .setTitle(title)
+            .setMessage(message)
+            .setPositiveButton("ok") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .create()
+            .show()
     }
 }
 
@@ -59,9 +59,7 @@ fun Fragment.showAlert(
 ) {
     Timber.i(message)
     val context = this.context ?: return
-    if(this.isResumed) {
-        context.showAlert(title, message)
-    }
+    context.showAlert(title, message)
 }
 
 fun Fragment.showErrorAlert(
@@ -70,9 +68,7 @@ fun Fragment.showErrorAlert(
 ) {
     Timber.e(throwable)
     val context = this.context ?: return
-    if(this.isResumed) {
-        context.showAlert(title, "Error:\n${throwable.localizedMessage}")
-    }
+    context.showAlert(title, "Error:\n${throwable.localizedMessage}")
 }
 
 fun Activity.showErrorAlert(
@@ -111,7 +107,7 @@ fun ApproveSession.toDialogMessage() = buildString {
 }
 
 fun <T> Intent.getParcelable(key: String, typeClass: Class<T>) : T? {
-    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
         getParcelableExtra(key, typeClass)
     } else {
         getParcelableExtra(key)

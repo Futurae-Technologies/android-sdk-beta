@@ -3,9 +3,7 @@ package com.futurae.futuraedemo.ui.fragment
 import android.app.Activity
 import android.content.ClipData
 import android.content.ClipboardManager
-import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageView
@@ -13,7 +11,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat.getSystemService
 import androidx.lifecycle.lifecycleScope
@@ -21,7 +18,6 @@ import com.bumptech.glide.Glide
 import com.futurae.futuraedemo.R
 import com.futurae.futuraedemo.ui.AccountSelectionSheet
 import com.futurae.futuraedemo.ui.activity.ActivityAccountHistory
-import com.futurae.futuraedemo.ui.activity.adaptive.AdaptiveCollectionsOverviewActivity
 import com.futurae.futuraedemo.ui.activity.FTRQRCodeActivity
 import com.futurae.futuraedemo.ui.activity.FuturaeActivity
 import com.futurae.futuraedemo.ui.qr_push_action.QRCodeFlowOpenCoordinator
@@ -33,7 +29,6 @@ import com.futurae.futuraedemo.util.showErrorAlert
 import com.futurae.futuraedemo.util.showInputDialog
 import com.futurae.futuraedemo.util.toDialogMessage
 import com.futurae.sdk.FuturaeSDK
-import com.futurae.sdk.adaptive.AdaptiveSDK
 import com.futurae.sdk.public_api.account.model.AccountsStatus
 import com.futurae.sdk.public_api.account.model.ActivationCode
 import com.futurae.sdk.public_api.account.model.EnrollAccount
@@ -59,7 +54,6 @@ import com.futurae.sdk.public_api.session.model.SessionInfoQuery
 import com.futurae.sdk.utils.FTQRCodeUtils
 import com.google.android.gms.vision.barcode.Barcode
 import com.google.android.material.button.MaterialButton
-import com.google.android.material.slider.Slider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -178,7 +172,7 @@ abstract class FragmentSDKOperations : BaseFragment() {
                         val sessionInfos = accountsStatus.statuses.first().activeSessions
                         if (sessionInfos.isNotEmpty()) {
                             val session = ApproveSession(sessionInfos.first())
-                            (activity as FuturaeActivity).onApproveAuth(
+                            (activity as FuturaeActivity).showApproveAuthConfirmationDialog(
                                 session,
                                 null
                             )
@@ -396,6 +390,7 @@ abstract class FragmentSDKOperations : BaseFragment() {
             } else {
                 EnrollAccount
             }
+
             requireContext().showInputDialog("Flow Binding Token") { token ->
                 lifecycleScope.launch {
                     try {

@@ -35,8 +35,6 @@ import com.futurae.sdk.public_api.exception.FTLockMechanismUnavailableException
 import com.futurae.sdk.public_api.lock.model.WithBiometrics
 import com.futurae.sdk.public_api.lock.model.WithBiometricsOrDeviceCredentials
 import com.futurae.sdk.public_api.lock.model.WithSDKPin
-import kotlinx.coroutines.launch
-
 
 class MainActivity : FuturaeActivity(), FragmentConfiguration.Listener, FragmentSettings.Listener {
 

@@ -81,31 +81,30 @@
 
         <activity
             android:name=".ui.activity.FTRQRCodeActivity"
-            android:exported="false"
-            android:screenOrientation="portrait" />
+            android:exported="false" />
 
         <activity
             android:name=".ui.activity.ActivityAccountHistory"
-            android:exported="false"
-            android:screenOrientation="portrait" />
-
-        <activity
-            android:name=".ui.activity.AdaptiveViewerActivity"
-            android:exported="false"
-            android:screenOrientation="portrait" />
-
-        <activity
-            android:name=".ui.activity.AdaptiveCollectionDetailsActivity"
-            android:exported="false"
-            android:screenOrientation="portrait" />
+            android:exported="false" />
 
         <activity
             android:name=".ui.activity.ActivitySDKConfiguration"
-            android:exported="false"
-            android:screenOrientation="portrait" />
+            android:exported="false" />
 
         <activity
             android:name=".ui.activity.ActivityPin"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.activity.adaptive.AdaptiveOverviewActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.activity.adaptive.AdaptiveCollectionsOverviewActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.activity.adaptive.AdaptiveCollectionDetailsActivity"
             android:exported="false" />
 
     </application>

@@ -121,22 +121,24 @@ class FragmentSDKUnlockBioPin : FragmentSDKOperations() {
                                                 }
                                             }
                                             showDialog("Approve", "Request Info: $sb", "Approve", {
-                                                val verificationSignature = try {
-                                                    FuturaeSDK.client.authApi.getOfflineQRVerificationCode(
-                                                        qrcode.rawValue,
-                                                        SDKAuthMode.PinOrBiometrics(
-                                                            PinCode(it)
-                                                        )
+                                                lifecycleScope.launch {
+                                                    val verificationSignature = try {
+                                                        FuturaeSDK.client.authApi.getOfflineQRVerificationCode(
+                                                            qrcode.rawValue,
+                                                            SDKAuthMode.PinOrBiometrics(
+                                                                PinCode(it)
+                                                            )
+                                                        ).await()
+                                                    } catch (e: Exception) {
+                                                        Timber.e(e)
+                                                        showErrorAlert("SDK Unlock", e)
+                                                    }
+                                                    currentRequest = 0
+                                                    showAlert(
+                                                        "Confirm Transaction",
+                                                        "To Approve the transaction, enter: $verificationSignature in the browser"
                                                     )
-                                                } catch (e: Exception) {
-                                                    Timber.e(e)
-                                                    showErrorAlert("SDK Unlock", e)
                                                 }
-                                                currentRequest = 0
-                                                showAlert(
-                                                    "Confirm Transaction",
-                                                    "To Approve the transaction, enter: $verificationSignature in the browser"
-                                                )
                                             }, " Deny", {
                                                 //Nothing
                                             })
@@ -197,7 +199,7 @@ class FragmentSDKUnlockBioPin : FragmentSDKOperations() {
                                                                 )
                                                             )
                                                         )
-                                                    )
+                                                    ).await()
                                                 showAlert(
                                                     "Confirm Transaction",
                                                     "To Approve the transaction, enter: $code in the browser"
@@ -210,7 +212,7 @@ class FragmentSDKUnlockBioPin : FragmentSDKOperations() {
                             } else {
                                 showErrorAlert(
                                     "SDK Unlock",
-                                    IllegalStateException("Invalid QR code for Enroll")
+                                    IllegalStateException("Invalid QR code for Offline Auth")
                                 )
                                 currentRequest = 0
                             }
