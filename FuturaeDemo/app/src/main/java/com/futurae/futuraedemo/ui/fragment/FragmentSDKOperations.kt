@@ -410,6 +410,35 @@ abstract class FragmentSDKOperations : BaseFragment() {
         }
     }
 
+    protected fun onActivationCodeEnroll(sdkPin: CharArray? = null) {
+        requireContext().showInputDialog("Activation code") { code ->
+            val enrollUseCase = if (sdkPin != null) {
+                EnrollAccountAndSetupSDKPin(
+                    sdkPin = sdkPin
+                )
+            } else {
+                EnrollAccount
+            }
+
+            requireContext().showInputDialog("Flow Binding Token") { token ->
+                lifecycleScope.launch {
+                    try {
+                        FuturaeSDK.client.accountApi.enrollAccount(
+                            enrollmentParameters = EnrollmentParams(
+                                ActivationCode(code),
+                                enrollUseCase,
+                                token
+                            )
+                        ).await()
+                        showToast("Enrolled")
+                    } catch (t: Throwable) {
+                        showErrorAlert("Enroll Error", t)
+                    }
+                }
+            }
+        }
+    }
+
     private fun onAuthQRCodeScanned(data: Intent) {
         data.getParcelable(
             FTRQRCodeActivity.PARAM_BARCODE,

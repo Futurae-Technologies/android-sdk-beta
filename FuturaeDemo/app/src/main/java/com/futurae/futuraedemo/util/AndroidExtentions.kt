@@ -43,13 +43,13 @@ fun Context.showAlert(
 ) {
     android.os.Handler(Looper.getMainLooper()).post {
         AlertDialog.Builder(this)
-            .setTitle(title)
-            .setMessage(message)
-            .setPositiveButton("ok") { dialog, _ ->
-                dialog.dismiss()
-            }
-            .create()
-            .show()
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton("ok") { dialog, _ ->
+                    dialog.dismiss()
+                }
+                .create()
+                .show()
     }
 }
 

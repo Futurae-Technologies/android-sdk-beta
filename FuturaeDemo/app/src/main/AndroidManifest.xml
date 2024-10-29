@@ -1,19 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    package="com.futurae.futuraedemo">
+    xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <uses-permission android:name="android.permission.CAMERA" />
 
     <uses-feature android:name="android.hardware.camera" />
 
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
-    <!-- START - ADAPTIVE PERMISSIONS - USE ONLY FOR ADAPTIVE SDK -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+
+    <!-- START ADAPTIVE PERMISSIONS -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
@@ -31,7 +30,7 @@
     <uses-permission
         android:name="android.permission.BLUETOOTH_ADMIN"
         android:maxSdkVersion="30" />
-    <!-- END - ADAPTIVE PERMISSIONS -->
+
 
     <application
         android:name=".ui.App"
@@ -61,8 +60,8 @@
 
         <activity
             android:name=".ui.activity.MainActivity"
-            android:exported="true"
-            android:launchMode="singleTask">
+            android:launchMode="singleTop"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -77,14 +76,22 @@
 
                 <data android:scheme="futurae" />
             </intent-filter>
+
+            <!-- Universal Links -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:scheme="https"
+                    android:host="www.futurae.com" />
+            </intent-filter>
         </activity>
 
         <activity
             android:name=".ui.activity.FTRQRCodeActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".ui.activity.ActivityAccountHistory"
             android:exported="false" />
 
         <activity
@@ -93,6 +100,10 @@
 
         <activity
             android:name=".ui.activity.ActivityPin"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.activity.ActivityAccountHistory"
             android:exported="false" />
 
         <activity

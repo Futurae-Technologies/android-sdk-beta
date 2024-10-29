@@ -297,6 +297,15 @@ class FragmentSDKUnlockBioPin : FragmentSDKOperations() {
         binding.buttonEnroll.setOnClickListener {
             scanQRCode()
         }
+        binding.buttonEnrollActivation.setOnClickListener {
+            if(FuturaeSDK.client.accountApi.getActiveAccounts().isEmpty()) {
+                getPinWithCallback {
+                    onActivationCodeEnroll(it)
+                }
+            } else {
+                onActivationCodeEnroll()
+            }
+        }
         binding.buttonEnrollManual.setOnClickListener {
             onManualEntryEnroll()
         }

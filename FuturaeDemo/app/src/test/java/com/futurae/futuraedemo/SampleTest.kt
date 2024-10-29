@@ -1,6 +1,6 @@
 package com.futurae.futuraedemo
 
-import com.futurae.sdk.exception.FTSignatureException
+import com.futurae.sdk.public_api.exception.FTSignatureException
 import org.junit.Assert.assertEquals
 import org.junit.Test
 

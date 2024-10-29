@@ -9,11 +9,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.futurae.futuraedemo.databinding.FragmentSdkSettingsBinding
 import com.futurae.futuraedemo.ui.activity.ActivitySDKConfiguration
 import com.futurae.futuraedemo.ui.activity.EXTRA_CONFIG
 import com.futurae.futuraedemo.ui.activity.adaptive.AdaptiveOverviewActivity
+import com.futurae.futuraedemo.util.LocalStorage
 import com.futurae.futuraedemo.util.getParcelable
 import com.futurae.futuraedemo.util.showAlert
 import com.futurae.futuraedemo.util.showErrorAlert
@@ -40,6 +42,7 @@ class FragmentSettings : BaseFragment() {
 
     private var listener: Listener? = null
     private lateinit var updatedConfiguration: SDKConfiguration
+    private lateinit var localStorage: LocalStorage
 
     private val launchSDKConfiguration =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -60,6 +63,7 @@ class FragmentSettings : BaseFragment() {
     override fun onAttach(context: Context) {
         super.onAttach(context)
         listener = context as Listener
+        localStorage = LocalStorage(context)
     }
 
     override fun onDetach() {
@@ -188,6 +192,19 @@ class FragmentSettings : BaseFragment() {
         }
         binding.buttonAdaptiveOverview.setOnClickListener {
             startActivity(Intent(requireContext(), AdaptiveOverviewActivity::class.java))
+        }
+        binding.buttonToggleAllowChangePinWithBio.isVisible = localStorage.getPersistedSDKConfig().lockConfigurationType == LockConfigurationType.SDK_PIN_WITH_BIOMETRICS_OPTIONAL
+        binding.buttonToggleAllowChangePinWithBio.isChecked = localStorage.getPersistedSDKConfig().allowChangePinCodeWithBiometricUnlock
+        binding.buttonToggleAllowChangePinWithBio.setOnCheckedChangeListener { buttonView, isChecked ->
+            val sdkConfig = localStorage.getPersistedSDKConfig()
+            val updatedConfig = sdkConfig.copy(allowChangePinCodeWithBiometricUnlock = isChecked)
+            localStorage.persistSDKConfiguration(updatedConfig)
+            val message = if(updatedConfig.allowChangePinCodeWithBiometricUnlock) {
+                "changeSDKPin with Bio allowed for next SDK launch"
+            } else {
+                "changeSDKPin with Bio disabled for next SDK launch"
+            }
+            showAlert("SDK Config update", message)
         }
     }
 

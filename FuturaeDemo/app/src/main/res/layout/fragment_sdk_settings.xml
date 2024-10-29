@@ -116,6 +116,13 @@
                 android:layout_marginTop="10dp"
                 android:text="Adaptive Overview" />
 
+            <com.google.android.material.materialswitch.MaterialSwitch
+                android:id="@+id/buttonToggleAllowChangePinWithBio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="Allow changeSDKPIn with biometric unlock" />
+
         </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>

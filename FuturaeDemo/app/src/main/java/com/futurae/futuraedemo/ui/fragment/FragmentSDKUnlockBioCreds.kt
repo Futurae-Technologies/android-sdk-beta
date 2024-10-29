@@ -57,6 +57,9 @@ class FragmentSDKUnlockBioCreds : FragmentSDKOperations() {
         binding.buttonEnroll.setOnClickListener {
             scanQRCode()
         }
+        binding.buttonEnrollActivation.setOnClickListener {
+            onActivationCodeEnroll()
+        }
         binding.buttonEnrollManual.setOnClickListener {
             onManualEntryEnroll()
         }
