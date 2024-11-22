@@ -77,7 +77,6 @@
                 <data android:scheme="futurae" />
             </intent-filter>
 
-            <!-- Universal Links -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
 
