@@ -52,7 +52,7 @@ class FuturaeViewModel : ViewModel() {
                         .joinToString(
                             separator = ",\n",
                             transform = { pair -> "key: ${pair.first}, value:${pair.second}" }
-                        )
+                        ) + "\n\nUserId = ${message.ftNotificationData.userId}"
                 )
             }
             is BroadcastReceivedMessage.Error -> {
