@@ -12,8 +12,8 @@ android {
         minSdkVersion 23
         targetSdkVersion 35
 
-        versionCode 332
-        versionName "3.3.2-beta"
+        versionCode 340
+        versionName "3.4.0-beta"
 
         resValue "string", "sdk_id", "$SDK_ID"
         resValue "string", "sdk_key", "$SDK_KEY"
@@ -95,9 +95,9 @@ dependencies {
     implementation 'com.google.firebase:firebase-messaging'
 
     // Futurae SDK
-    implementation 'com.futurae.sdk:futuraekit-beta:3.3.2-beta'
+    implementation 'com.futurae.sdk:futuraekit-beta:3.4.0-beta'
     // OPTIONAL - Adaptive SDK.
-    implementation 'com.futurae.sdk:adaptive:1.0.3-alpha'
+    implementation 'com.futurae.sdk:adaptive:1.1.0-alpha'
 }
 
 apply plugin: 'com.google.gms.google-services'

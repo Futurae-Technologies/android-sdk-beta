@@ -463,9 +463,11 @@ abstract class FragmentSDKOperations : BaseFragment() {
                         )
                     ).await()
 
-                    ApproveSession(sessionInfo).takeIf { it.userId?.isNotBlank() == true }
+                    ApproveSession(sessionInfo)
+                        .takeIf { it.userId?.isNotBlank() == true }
                         ?.let { session ->
-                            showDialog("approve",
+                            showDialog(
+                                "approve",
                                 "Would you like to approve the request?${session.toDialogMessage()}",
                                 "Approve",
                                 {
@@ -507,10 +509,11 @@ abstract class FragmentSDKOperations : BaseFragment() {
                                         }
                                     }
                                 })
-                        } ?: showErrorAlert(
-                        "SDK Error",
-                        Throwable("Session is missing user id")
-                    )
+                        }
+                        ?: showErrorAlert(
+                            "SDK Error",
+                            Throwable("Session is missing user id")
+                        )
                 } catch (t: Throwable) {
                     showErrorAlert("Session API error", t)
                 }

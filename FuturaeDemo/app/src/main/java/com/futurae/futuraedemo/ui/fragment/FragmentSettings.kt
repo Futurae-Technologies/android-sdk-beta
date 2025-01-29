@@ -20,6 +20,7 @@ import com.futurae.futuraedemo.util.getParcelable
 import com.futurae.futuraedemo.util.showAlert
 import com.futurae.futuraedemo.util.showErrorAlert
 import com.futurae.sdk.FuturaeSDK
+import com.futurae.sdk.adaptive.debug.AdaptiveDebugUtil
 import com.futurae.sdk.debug.FuturaeDebugUtil
 import com.futurae.sdk.public_api.auth.model.ApproveParameters
 import com.futurae.sdk.public_api.auth.model.SessionId
@@ -130,6 +131,12 @@ class FragmentSettings : BaseFragment() {
         }
         binding.buttonClearV2LocalStorageKey.setOnClickListener {
             FuturaeDebugUtil.corruptEncryptedStorageKey(requireContext())
+        }
+        binding.buttonCorruptAdaptiveLocalStorage.setOnClickListener {
+            AdaptiveDebugUtil.corruptDB()
+        }
+        binding.buttonClearAdaptiveLocalStorageKey.setOnClickListener {
+            AdaptiveDebugUtil.corruptEncryptedStorageKey()
         }
         binding.buttonTestWithDelay.setOnClickListener {
             lifecycleScope.launch {
