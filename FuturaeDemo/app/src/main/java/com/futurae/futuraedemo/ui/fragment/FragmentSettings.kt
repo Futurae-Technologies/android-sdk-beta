@@ -200,6 +200,7 @@ class FragmentSettings : BaseFragment() {
         binding.buttonAdaptiveOverview.setOnClickListener {
             startActivity(Intent(requireContext(), AdaptiveOverviewActivity::class.java))
         }
+
         binding.buttonToggleAllowChangePinWithBio.isVisible = localStorage.getPersistedSDKConfig().lockConfigurationType == LockConfigurationType.SDK_PIN_WITH_BIOMETRICS_OPTIONAL
         binding.buttonToggleAllowChangePinWithBio.isChecked = localStorage.getPersistedSDKConfig().allowChangePinCodeWithBiometricUnlock
         binding.buttonToggleAllowChangePinWithBio.setOnCheckedChangeListener { buttonView, isChecked ->
@@ -212,6 +213,11 @@ class FragmentSettings : BaseFragment() {
                 "changeSDKPin with Bio disabled for next SDK launch"
             }
             showAlert("SDK Config update", message)
+        }
+
+        binding.buttonToggleAllowUnprotectedSessionInfo.isChecked = localStorage.isUnprotectedSessionInfoEnabled
+        binding.buttonToggleAllowUnprotectedSessionInfo.setOnCheckedChangeListener { _, isChecked ->
+            localStorage.setUnprotectedSessionInfoEnabled(isChecked)
         }
     }
 
