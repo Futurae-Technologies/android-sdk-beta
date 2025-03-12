@@ -37,9 +37,7 @@ class AdaptiveCollectionsOverviewActivity : FuturaeActivity() {
 
         binding.recycler.adapter = adapter
         binding.clearCollections.setOnClickListener {
-            lifecycleScope.launch(Dispatchers.IO) {
-                AdaptiveDbHelper.deleteAllCollections()
-            }
+            AdaptiveDbHelper.deleteAllCollections()
         }
 
         lifecycleScope.launch(Dispatchers.Main) {

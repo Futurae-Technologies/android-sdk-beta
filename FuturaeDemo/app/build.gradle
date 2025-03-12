@@ -97,7 +97,7 @@ dependencies {
     // Futurae SDK
     implementation 'com.futurae.sdk:futuraekit-beta:3.5.1-beta'
     // OPTIONAL - Adaptive SDK.
-    implementation 'com.futurae.sdk:adaptive:1.1.1-alpha'
+    implementation 'com.futurae.sdk:adaptive:1.1.2-alpha'
 }
 
 apply plugin: 'com.google.gms.google-services'
