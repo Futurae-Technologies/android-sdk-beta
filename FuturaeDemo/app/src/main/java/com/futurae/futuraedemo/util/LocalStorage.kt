@@ -13,7 +13,7 @@ private const val SP_KEY_INVALIDATE_BY_BIOMETRICS = "SP_IBB"
 private const val SP_KEY_REQUIRE_DEVICE_UNLOCKED = "SP_RDU"
 private const val SP_KEY_SKIP_HARDWARE_SECURITY = "SP_SHS"
 private const val SP_KEY_ALLOW_SDK_PIN_CHANGE_WITH_BIO = "SP_ASPCWB"
-private const val SP_KEY_ALLOW_UNPROTECTED_SESSION_INFO_ENABLED = "SP_KEY_ALLOW_UNPROTECTED_SESSION_INFO_ENABLED"
+private const val SP_KEY_ALLOW_SESSION_INFO_WITHOUT_UNLOCK_ENABLED = "SP_KEY_ALLOW_SESSION_INFO_WITHOUT_UNLOCK_ENABLED"
 
 class LocalStorage(private val context: Context) {
 
@@ -56,10 +56,10 @@ class LocalStorage(private val context: Context) {
         this.clear()
     }
 
-    val isUnprotectedSessionInfoEnabled: Boolean
-        get() = sharedPrefs.getBoolean(SP_KEY_ALLOW_UNPROTECTED_SESSION_INFO_ENABLED, false)
+    val isSessionInfoWithoutUnlockEnabled: Boolean
+        get() = sharedPrefs.getBoolean(SP_KEY_ALLOW_SESSION_INFO_WITHOUT_UNLOCK_ENABLED, false)
 
-    fun setUnprotectedSessionInfoEnabled(enabled: Boolean) = sharedPrefs.edit {
-        putBoolean(SP_KEY_ALLOW_UNPROTECTED_SESSION_INFO_ENABLED, enabled)
+    fun setSessionInfoWithoutUnlockEnabled(enabled: Boolean) = sharedPrefs.edit {
+        putBoolean(SP_KEY_ALLOW_SESSION_INFO_WITHOUT_UNLOCK_ENABLED, enabled)
     }
 }

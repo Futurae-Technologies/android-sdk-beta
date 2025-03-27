@@ -8,7 +8,6 @@ import android.os.Looper
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import com.futurae.sdk.public_api.session.model.ApproveSession
-import com.futurae.sdk.utils.FTNotificationUtils.PARAM_APPROVE_SESSION
 import timber.log.Timber
 
 fun Context.showDialog(

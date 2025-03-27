@@ -67,7 +67,7 @@ abstract class FuturaeActivity : AppCompatActivity() {
     }
 
     private val viewModel: FuturaeViewModel by viewModels {
-        FuturaeViewModel.provideFactory(localStorage.isUnprotectedSessionInfoEnabled)
+        FuturaeViewModel.provideFactory(localStorage.isSessionInfoWithoutUnlockEnabled)
     }
 
     protected var pendingUri: String? = null
@@ -227,7 +227,7 @@ abstract class FuturaeActivity : AppCompatActivity() {
                     ById(session.sessionId),
                     userIdInSession,
                 ),
-                isPhysicalDeviceSessionInfoEnabled = localStorage.isUnprotectedSessionInfoEnabled
+                isSessionInfoWithoutUnlockEnabled = localStorage.isSessionInfoWithoutUnlockEnabled
             )
         } catch (t: Throwable) {
             Timber.e(t)
@@ -274,7 +274,7 @@ abstract class FuturaeActivity : AppCompatActivity() {
                     ById(session.sessionId),
                     userIdInSession,
                 ),
-                isPhysicalDeviceSessionInfoEnabled = localStorage.isUnprotectedSessionInfoEnabled
+                isSessionInfoWithoutUnlockEnabled = localStorage.isSessionInfoWithoutUnlockEnabled
             )
         } catch (t: Throwable) {
             Timber.e(t)

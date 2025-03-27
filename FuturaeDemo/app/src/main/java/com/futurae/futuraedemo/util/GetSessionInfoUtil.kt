@@ -5,9 +5,9 @@ import com.futurae.sdk.public_api.session.model.SessionInfoQuery
 
 suspend fun getSessionInfo(
     query: SessionInfoQuery,
-    isPhysicalDeviceSessionInfoEnabled: Boolean
-) = if (isPhysicalDeviceSessionInfoEnabled) {
-        FuturaeSDK.client.sessionApi.getSessionInfoUnprotected(query).await()
+    isSessionInfoWithoutUnlockEnabled: Boolean
+) = if (isSessionInfoWithoutUnlockEnabled) {
+        FuturaeSDK.client.sessionApi.getSessionInfoWithoutUnlock(query).await()
     } else {
         FuturaeSDK.client.sessionApi.getSessionInfo(query).await()
     }

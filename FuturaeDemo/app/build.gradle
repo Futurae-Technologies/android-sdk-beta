@@ -95,7 +95,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-messaging'
 
     // Futurae SDK
-    implementation 'com.futurae.sdk:futuraekit-beta:3.5.1-beta'
+    implementation 'com.futurae.sdk:futuraekit-beta:3.6.0-beta'
     // OPTIONAL - Adaptive SDK.
     implementation 'com.futurae.sdk:adaptive:1.1.2-alpha'
 }

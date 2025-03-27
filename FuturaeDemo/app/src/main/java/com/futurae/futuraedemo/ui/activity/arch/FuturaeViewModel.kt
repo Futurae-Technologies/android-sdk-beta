@@ -26,17 +26,17 @@ typealias DoOnUnlockMethodPicked = (UnlockMethodType) -> Unit
 typealias DoOnSdkUnlockUnlocked = () -> Unit
 
 class FuturaeViewModel(
-    private val isPhysicalDeviceSessionInfoEnabled: Boolean
+    private val isSessionInfoWithoutUnlockEnabled: Boolean
 ) : ViewModel() {
 
     companion object {
         fun provideFactory(
-            isPhysicalDeviceSessionInfoEnabled: Boolean
+            isSessionInfoWithoutUnlockEnabled: Boolean
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
 
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T = FuturaeViewModel(
-                isPhysicalDeviceSessionInfoEnabled = isPhysicalDeviceSessionInfoEnabled
+                isSessionInfoWithoutUnlockEnabled = isSessionInfoWithoutUnlockEnabled
             ) as T
         }
     }
@@ -131,7 +131,7 @@ class FuturaeViewModel(
             }
 
             message.approveSession.hasExtraInfo() -> {
-                if (isPhysicalDeviceSessionInfoEnabled) {
+                if (isSessionInfoWithoutUnlockEnabled) {
                     viewModelScope.launch {
                         fetchSessionInfo(approveSession = message.approveSession)
                             .await()
@@ -258,7 +258,7 @@ class FuturaeViewModel(
                     sessionIdentifier = ById(sessionId),
                     userId = userId
                 ),
-                isPhysicalDeviceSessionInfoEnabled = isPhysicalDeviceSessionInfoEnabled
+                isSessionInfoWithoutUnlockEnabled = isSessionInfoWithoutUnlockEnabled
             )
 
             Result.success(sessionInfo.approveInfo)

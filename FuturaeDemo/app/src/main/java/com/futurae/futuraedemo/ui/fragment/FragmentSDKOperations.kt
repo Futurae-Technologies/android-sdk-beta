@@ -463,7 +463,7 @@ abstract class FragmentSDKOperations : BaseFragment() {
                             ByToken(sessionToken),
                             userId,
                         ),
-                        isPhysicalDeviceSessionInfoEnabled = localStorage.isUnprotectedSessionInfoEnabled
+                        isSessionInfoWithoutUnlockEnabled = localStorage.isSessionInfoWithoutUnlockEnabled
                     )
 
                     ApproveSession(sessionInfo)
@@ -547,7 +547,7 @@ abstract class FragmentSDKOperations : BaseFragment() {
                         ByToken(sessionToken),
                         userId,
                     ),
-                    isPhysicalDeviceSessionInfoEnabled = localStorage.isUnprotectedSessionInfoEnabled
+                    isSessionInfoWithoutUnlockEnabled = localStorage.isSessionInfoWithoutUnlockEnabled
                 )
             } catch (t: Throwable) {
                 showErrorAlert("Session API error", t)

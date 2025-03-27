@@ -138,7 +138,7 @@
                 android:text="Allow changeSDKPIn with biometric unlock" />
 
             <com.google.android.material.materialswitch.MaterialSwitch
-                android:id="@+id/button_toggle_allow_unprotected_session_info"
+                android:id="@+id/button_toggle_allow_fetching_session_info_without_unlock"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"

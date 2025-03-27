@@ -215,9 +215,9 @@ class FragmentSettings : BaseFragment() {
             showAlert("SDK Config update", message)
         }
 
-        binding.buttonToggleAllowUnprotectedSessionInfo.isChecked = localStorage.isUnprotectedSessionInfoEnabled
-        binding.buttonToggleAllowUnprotectedSessionInfo.setOnCheckedChangeListener { _, isChecked ->
-            localStorage.setUnprotectedSessionInfoEnabled(isChecked)
+        binding.buttonToggleAllowFetchingSessionInfoWithoutUnlock.isChecked = localStorage.isSessionInfoWithoutUnlockEnabled
+        binding.buttonToggleAllowFetchingSessionInfoWithoutUnlock.setOnCheckedChangeListener { _, isChecked ->
+            localStorage.setSessionInfoWithoutUnlockEnabled(isChecked)
         }
     }
 
